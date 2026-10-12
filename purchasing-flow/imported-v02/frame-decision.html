@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한화첨단소재 AI 구매 의사결정 및 시나리오 분석 (UA-14)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&display=swap');
+    body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Custom Accent & Range Styling */
+    input[type="range"] {
+      accent-color: #eb6100;
+    }
+  </style>
+<style>body > aside { display: none !important; } body > main { width: 100%; }</style></head>
+<body class="bg-[#f8f9fa] text-slate-800 antialiased min-h-screen flex">
+
+  <!-- ======================================================== -->
+  <!-- 1. 좌측 LNB 사이드바 (한화첨단소재 표준 LNB 디자인 통합) -->
+  <!-- ======================================================== -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 min-h-screen sticky top-0 h-screen z-40">
+    <div>
+      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-100">
+        <div>
+          <span class="text-base font-black text-[#eb6100] tracking-tight block">한화첨단소재</span>
+          <span class="text-[11px] text-slate-400 font-medium block">AI 구매 의사결정 Agent</span>
+        </div>
+        <button class="w-8 h-8 rounded-lg bg-[#fff5ed] text-[#eb6100] border border-[#fcdbc7] flex items-center justify-center">
+          <i class="fa-solid fa-bars text-xs"></i>
+        </button>
+      </div>
+
+      <div class="px-3 py-4">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">MENU</span>
+        <nav class="space-y-1.5">
+          <!-- 비활성 메뉴들 -->
+          <div class="space-y-1 opacity-50 cursor-not-allowed">
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-table-cells-large w-5 text-sm mr-2.5"></i>
+              <span>전체 대시보드 (UA-09)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-gauge-high w-5 text-sm mr-2.5"></i>
+              <span>Market Health (UA-10)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-chart-line w-5 text-sm mr-2.5"></i>
+              <span>구매원가·마진스프레드 (UA-11)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-calculator w-5 text-sm mr-2.5"></i>
+              <span>목표원가 산출/이력 (UA-12)</span>
+            </div>
+          </div>
+
+          <!-- 활성화 메뉴: AI 구매 의사결정 워크스페이스 (UA-14) -->
+          <a href="#" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-bold bg-[#fbeee6] text-[#eb6100] transition mt-2">
+            <div class="flex items-center">
+              <i class="fa-solid fa-wand-magic-sparkles w-5 text-base mr-2.5 text-[#eb6100]"></i>
+              <span>AI 구매의사결정 (UA-14)</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#eb6100] text-white font-bold">ACTIVE</span>
+          </a>
+
+          <div class="pt-2 border-t border-slate-100 space-y-1 opacity-50 cursor-not-allowed">
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-newspaper w-5 text-sm mr-2.5"></i>
+              <span>글로벌 뉴스 분석 (UA-13)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-gear w-5 text-sm mr-2.5"></i>
+              <span>산식·기준 관리 (UA-16)</span>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- 프로필 영역 -->
+    <div class="p-4 border-t border-slate-100 flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-full bg-[#eb6100] text-white font-bold flex items-center justify-center text-xs shadow-sm">
+        김H
+      </div>
+      <div>
+        <div class="text-xs font-bold text-slate-800">김태화</div>
+        <div class="text-[11px] text-slate-400">구매SCM팀 &bull; DX</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- 2. 메인 컨텐츠 영역 -->
+  <!-- ======================================================== -->
+  <main class="flex-1 min-w-0 p-8 space-y-6 overflow-y-auto">
+
+    <!-- Top Navigation / Item Selector Header -->
+    <header class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-orange-50 border border-orange-200 text-xs font-black text-[#eb6100]">
+          <i class="fa-solid fa-wand-magic-sparkles text-[#eb6100]"></i>
+          UA-14 구매의사 결정 · 시나리오 분석
+        </div>
+        <h1 class="text-2xl font-black tracking-tight text-slate-900">
+          원재료 구매전략 제안 및 조건 변경 시뮬레이션
+        </h1>
+        <p class="text-xs text-slate-500">목표원가 산식, 밸류체인 마진, 창고 재고율 및 What-If 시나리오를 통합 검증합니다.</p>
+      </div>
+
+      <!-- Item Selector & Currency Indicator (한화첨단소재 핵심 3대 원재료 1:1 매핑) -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 bg-white border border-slate-300 rounded-lg px-3 py-1.5 shadow-xs">
+          <label for="itemSelect" class="text-xs font-bold text-slate-500">분석 대상:</label>
+          <select id="itemSelect" onchange="onMaterialChange(this.value)" class="bg-transparent text-slate-900 text-xs font-black outline-none cursor-pointer">
+            <option value="PP" selected>PP Resin (폴리프로필렌 사출급) - StrongLite</option>
+            <option value="EVA">EVA Resin (에틸렌비닐아세테이트) - 태양광</option>
+            <option value="M10">M10 N214002 (유리섬유 복합재) - SuperLite</option>
+          </select>
+        </div>
+        <div class="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-white rounded-lg text-xs font-bold text-slate-700 border border-slate-200 shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>USD/KRW: <strong>1,385.40원</strong> (+4.20)</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tabs Navigation -->
+    <div class="flex border-b border-slate-200 gap-2">
+      <button onclick="switchTab('tab1', this)" class="tab-btn px-4 py-2.5 text-xs font-black border-b-2 border-[#eb6100] text-[#eb6100] flex items-center gap-2 transition">
+        <i class="fa-solid fa-chart-pie"></i> 탭 1. AI 구매 의사결정 지원 (UA-14)
+      </button>
+      <button onclick="switchTab('tab2', this)" class="tab-btn px-4 py-2.5 text-xs font-bold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 transition">
+        <i class="fa-solid fa-sliders"></i> 탭 2. 구매 시나리오 분석 (What-If 시뮬레이터)
+      </button>
+    </div>
+
+    <!-- =======================================================
+         TAB 1 CONTENT: 의사결정 지원
+    ======================================================== -->
+    <div id="tab1" class="tab-content active space-y-6">
+      
+      <!-- AI 종합 전략 요약 카드 -->
+      <section class="rounded-2xl border border-slate-200 bg-white shadow-sm p-6 space-y-5 border-l-6 border-l-[#eb6100]">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <span id="decisionBadge" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-black bg-amber-50 text-amber-900 border border-amber-300 shadow-xs">
+              <i class="fa-solid fa-layer-group text-amber-700"></i>
+              제안 전략: <span id="decisionActionText">SPLIT_BUY (지금 150톤 체결 권고, 4주 후 분할 매입)</span>
+            </span>
+            <span class="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar text-slate-400"></i>
+              데이터 기준일자: <strong class="text-slate-800 font-bold">2026-09-22 (실시간 동기화)</strong>
+            </span>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <span class="text-slate-500 font-medium">데이터 신뢰도:</span>
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold">
+              <i class="fa-solid fa-circle-check"></i>
+              <span id="reliabilityText">높음 (95.4% · 결측치 0건 · Platts 정합)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI 종합 진단 브리핑 -->
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="flex items-start gap-3.5">
+            <div class="p-2.5 rounded-lg bg-[#eb6100] text-white mt-0.5 shadow-xs">
+              <i class="fa-solid fa-robot text-base"></i>
+            </div>
+            <div class="space-y-1.5 flex-1">
+              <h2 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                AI 종합 의사결정 브리핑
+                <span class="text-[11px] font-normal text-slate-400">Platts 모노머 시세 + 고시환율 + SAP 실구매단가 + 사내 창고 적재율 모델</span>
+              </h2>
+              <p id="decisionBriefingText" class="text-sm text-slate-700 leading-relaxed">
+                현재 프로필렌(C3) 시장가는 톤당 <strong>$895</strong>로 안정적이며, 당사 목표원가(₩1,408,500) 대비 실구매단가 편차는 <strong>+0.32%(+₩4,600)</strong> 수준으로 안정권에 수렴해 있습니다. 
+                다만 <strong>사내 원자재 창고 적재율이 84.5%(여유 캐파 150톤)</strong>에 도달해 있어 일괄 조달 시 불필요한 외주 보관료가 발생합니다. 
+                따라서 <span class="text-[#eb6100] font-black underline decoration-orange-300 underline-offset-4">여유 캐파에 맞춰 1차로 150톤을 즉시 매입하고, 잔여 소요량은 중국 PDH 증설에 따른 추가 단가 하락을 확인한 후 분할 매입(SPLIT_BUY)</span>하는 방어적 전략을 권고합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 주의 고지 및 액션 버튼 -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 text-xs border-t border-slate-100">
+          <div class="flex items-center gap-2 text-slate-500">
+            <i class="fa-solid fa-triangle-exclamation text-amber-600 flex-shrink-0"></i>
+            <span>
+              <strong class="font-bold text-slate-700">주의:</strong> 본 결과는 담당자의 구매 의사결정을 돕기 위한 AI 참고 정보이며, <strong>시스템이 자동으로 발주를 수행하지 않습니다.</strong>
+            </span>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button type="button" onclick="alert('전략 산출 근거 데이터셋 리포트가 다운로드되었습니다.')" class="px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-50 transition shadow-xs">
+              근거 리포트 다운로드
+            </button>
+            <button type="button" onclick="alert('SAP ERP 구매 품의 결재 기안 초안이 생성되었습니다.')" class="px-3.5 py-1.5 rounded-lg bg-[#eb6100] text-white font-black hover:bg-[#d95300] transition shadow-xs flex items-center gap-1.5">
+              <span>구매 품의서 연동</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4분할 원천 근거 카드 (한화첨단소재 도메인 데이터) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        <!-- CARD 1: 목표 원가 달성률 -->
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-md bg-orange-100 text-[#eb6100]"><i class="fa-solid fa-bullseye"></i></span>
+              <h3 class="font-black text-slate-900 text-sm">1. 목표원가 산출 달성률 (UA-12)</h3>
+            </div>
+            <span id="targetStatusBadge" class="text-[11px] font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">목표가 안정 수렴 (Pass)</span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-baseline justify-between">
+              <div>
+                <div class="text-xs text-slate-400">SAP 실제 구매단가</div>
+                <div class="text-2xl font-black text-slate-900" id="actualPriceVal">₩ 1,413,100 <span class="text-xs font-normal text-slate-400">/ Ton</span></div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-slate-400">산출 표준 목표원가 (Ver 2.4)</div>
+                <div class="text-sm font-bold text-slate-600" id="targetPriceVal">₩ 1,408,500 / Ton</div>
+                <div class="text-xs font-black text-emerald-600" id="priceGapVal">+₩ 4,600 (+0.32% 편차)</div>
+              </div>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+              <div id="targetProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 82%"></div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-50 text-xs text-slate-600 space-y-1 border border-slate-100 font-medium">
+              <div class="flex justify-between"><span>연계 주원료 (C3 프로필렌):</span><strong class="text-slate-800" id="rawIndexVal">Platts FOB Korea $895.00 / MT</strong></div>
+              <div class="flex justify-between"><span>적용 환율 &amp; 고정운임:</span><strong class="text-slate-800">1,385.40원 + ₩120,000 / Ton</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: 마진 스프레드 추이 -->
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-md bg-blue-100 text-blue-700"><i class="fa-solid fa-chart-line"></i></span>
+              <h3 class="font-black text-slate-900 text-sm">2. 밸류체인 마진 스프레드 (Clean Spread)</h3>
+            </div>
+            <span class="text-[11px] font-black px-2 py-0.5 rounded bg-blue-100 text-blue-800">마진 확보 양호</span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-baseline justify-between">
+              <div>
+                <div class="text-xs text-slate-400">현재 나프타 대비 스프레드</div>
+                <div class="text-2xl font-black text-blue-600" id="spreadVal">$ 407.0 <span class="text-xs font-normal text-slate-400">/ MT (+41.3%)</span></div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-slate-400">손익분기점 (BEP)</div>
+                <div class="text-xs font-bold text-rose-600">$ 250.0 이하 역마진 위험</div>
+              </div>
+            </div>
+            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+              <div class="bg-rose-400 h-full" style="width: 25%"></div>
+              <div class="bg-amber-400 h-full" style="width: 20%"></div>
+              <div class="bg-blue-600 h-full" style="width: 55%"></div>
+            </div>
+            <div class="p-3 rounded-lg bg-slate-50 text-xs text-slate-600 space-y-1 border border-slate-100 font-medium">
+              <div class="flex justify-between"><span>기초유분 나프타 (MOPJ):</span><strong class="text-slate-800">$ 578.00 / MT</strong></div>
+              <div class="flex justify-between"><span>산출 로직:</span><strong class="text-slate-800">[PP 공시가 $985] - [나프타 $578]</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: 과거 구매 실적 밴드 & 창고 제약 -->
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-md bg-purple-100 text-purple-700"><i class="fa-solid fa-database"></i></span>
+              <h3 class="font-black text-slate-900 text-sm">3. SAP 과거 실적 밴드 &amp; 창고 제약</h3>
+            </div>
+            <span class="text-[11px] font-black px-2 py-0.5 rounded bg-purple-100 text-purple-800">최근 18개월 중위 35% 구간</span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-baseline justify-between">
+              <div>
+                <div class="text-xs text-slate-400">최근 1년 평균 구매단가</div>
+                <div class="text-xl font-black text-slate-800" id="histAvgPrice">₩ 1,438,000 <span class="text-xs font-normal text-slate-400">/ Ton</span></div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs text-slate-400">현재 사내 창고 적재율</div>
+                <div class="text-xs font-black text-amber-600">84.5% (여유 150톤)</div>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center pt-1">
+              <div class="p-2 rounded-lg bg-slate-50 border border-slate-200"><span class="text-[10px] text-slate-400 block font-medium">1년 최고</span><strong class="text-xs text-slate-700">₩ 1,520,000</strong></div>
+              <div class="p-2 rounded-lg bg-orange-50 border border-orange-200"><span class="text-[10px] text-[#eb6100] font-bold block">현재 실구매가</span><strong class="text-xs text-[#eb6100]">₩ 1,413,100</strong></div>
+              <div class="p-2 rounded-lg bg-slate-50 border border-slate-200"><span class="text-[10px] text-slate-400 block font-medium">1년 최저</span><strong class="text-xs text-slate-700">₩ 1,385,000</strong></div>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed font-medium">
+              * 창고 보관 여력(150톤)을 초과한 일괄 매입 시 외주 보관료가 발생하므로 분할 매입이 적절합니다.
+            </p>
+          </div>
+        </div>
+
+        <!-- CARD 4: 글로벌 뉴스 리스크 센싱 (UA-13 연계) -->
+        <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-md bg-amber-100 text-amber-700"><i class="fa-solid fa-newspaper"></i></span>
+              <h3 class="font-black text-slate-900 text-sm">4. 글로벌 뉴스 리스크 센싱 (UA-13)</h3>
+            </div>
+            <span id="newsRiskBadge" class="text-[11px] font-black px-2 py-0.5 rounded bg-blue-100 text-blue-800">공급과잉 (하방 압력)</span>
+          </div>
+          <div class="space-y-2.5">
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50/70">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold text-slate-800 truncate" id="newsTitle1">동북아 C3 프로필렌 신규 PDH 60만 톤 설비 가동 개시… 역내 현물가 하향세</span>
+                <span class="text-[10px] font-black text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded flex-shrink-0">공급과잉</span>
+              </div>
+              <span class="text-[10px] text-slate-400">ICIS Chemical · 2시간 전 LLM 분석</span>
+            </div>
+            <div class="p-2.5 rounded-lg border border-slate-200 bg-slate-50/70">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-bold text-slate-800 truncate" id="newsTitle2">OPEC+ 감산 논의 지속에도 아시아 석유화학 증설 물량 출회</span>
+                <span class="text-[10px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded flex-shrink-0">원가 지지</span>
+              </div>
+              <span class="text-[10px] text-slate-400">Platts Energy · 5시간 전 요약</span>
+            </div>
+            <div class="pt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span class="text-slate-400 font-medium">감지 태그:</span>
+              <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold">#PDH신규가동</span>
+              <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-medium">#C3모노머하락</span>
+              <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold">#국내NCC가동률안정</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- =======================================================
+         TAB 2 CONTENT: 구매 시나리오 분석 (What-If 시뮬레이터)
+    ======================================================== -->
+    <div id="tab2" class="tab-content space-y-6">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- 좌측 조건 컨트롤러 (4열) -->
+        <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-5">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-0.5 rounded bg-orange-100 text-[#eb6100] text-[10px] font-black">SIMULATION</span>
+              <h2 class="text-base font-black text-slate-900">조건 변경 시뮬레이터 (What-If)</h2>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">시장 변수를 직접 조정하여 총 구매비용 및 원가 영향을 실시간 계산합니다.</p>
+          </div>
+
+          <!-- 시나리오 프리셋 버튼 -->
+          <div class="flex gap-2">
+            <button onclick="applyPreset(-8, 1340, 100)" class="flex-1 py-2 px-1 text-xs font-bold bg-slate-50 hover:bg-[#fff5ed] hover:border-[#fcdbc7] hover:text-[#eb6100] border border-slate-200 rounded-lg transition">
+              낙관 (시세하락)
+            </button>
+            <button onclick="applyPreset(0, 1385.4, 50)" class="flex-1 py-2 px-1 text-xs font-bold bg-slate-50 hover:bg-[#fff5ed] hover:border-[#fcdbc7] hover:text-[#eb6100] border border-slate-200 rounded-lg transition">
+              기준 (현재상태)
+            </button>
+            <button onclick="applyPreset(12, 1420, 0)" class="flex-1 py-2 px-1 text-xs font-bold bg-slate-50 hover:bg-[#fff5ed] hover:border-[#fcdbc7] hover:text-[#eb6100] border border-slate-200 rounded-lg transition">
+              비관 (원가폭등)
+            </button>
+          </div>
+
+          <div class="space-y-4 pt-2">
+            <!-- 1. 국제 시세 변동률 -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>국제 시세(C3) 변동률:</span>
+                <span id="priceDeltaVal" class="text-[#eb6100] font-black">0%</span>
+              </div>
+              <input type="range" id="priceDelta" min="-20" max="20" value="0" step="1" oninput="calculateScenario()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-400 font-medium">
+                <span>-20% (하락)</span>
+                <span>기준 ($895)</span>
+                <span>+20% (상승)</span>
+              </div>
+            </div>
+
+            <!-- 2. 적용 환율 -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>적용 환율 (USD/KRW):</span>
+                <span id="fxVal" class="text-[#eb6100] font-black">1,385.4원</span>
+              </div>
+              <input type="range" id="fxRate" min="1300" max="1460" value="1385.4" step="5" oninput="calculateScenario()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-400 font-medium">
+                <span>1,300원</span>
+                <span>기준 1,385.4원</span>
+                <span>1,460원</span>
+              </div>
+            </div>
+
+            <!-- 3. 월간 소요량 -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>월간 구매 소요량:</span>
+                <span id="qtyVal" class="text-[#eb6100] font-black">1,000 Ton</span>
+              </div>
+              <input type="range" id="reqQty" min="500" max="3000" value="1000" step="100" oninput="calculateScenario()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-400 font-medium">
+                <span>500 Ton</span>
+                <span>당월 1,000 Ton</span>
+                <span>3,000 Ton</span>
+              </div>
+            </div>
+
+            <!-- 4. 즉시 구매 분할 비율 -->
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-xs font-bold text-slate-700">
+                <span>즉시 구매 비율 (vs 지연구매):</span>
+                <span id="splitVal" class="text-[#eb6100] font-black">50% 즉시</span>
+              </div>
+              <input type="range" id="splitRate" min="0" max="100" value="50" step="10" oninput="calculateScenario()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer">
+              <div class="flex justify-between text-[10px] text-slate-400 font-medium">
+                <span>0% (전량보류)</span>
+                <span>50% 분할 매입</span>
+                <span>100% (전량구매)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우측 시나리오 비교 및 인사이트 (8열) -->
+        <div class="lg:col-span-8 space-y-5">
+          
+          <!-- 3대 시나리오 비교 카드 -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            
+            <!-- 시나리오 A: 낙관 -->
+            <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-600">시나리오 A (낙관)</span>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">-8% / 1,340원</span>
+              </div>
+              <div>
+                <div class="text-2xl font-black text-slate-900 tracking-tight">13.2 <span class="text-xs font-normal text-slate-400">억 원</span></div>
+                <div class="text-xs font-bold text-emerald-600 mt-1">▼ 0.9억 원 절감</div>
+              </div>
+              <div class="text-[11px] text-slate-400 border-t border-slate-100 pt-2">예상단가: ₩ 1,324,800/Ton</div>
+            </div>
+
+            <!-- 시나리오 B: 내 시뮬레이션 설정 (Active 강조) -->
+            <div class="bg-[#fffdfb] rounded-xl border-2 border-[#eb6100] p-4 shadow-sm flex flex-col justify-between space-y-2 relative">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-black text-[#eb6100]">내 시뮬레이션 설정</span>
+                <span class="text-[10px] font-black px-2 py-0.5 rounded bg-orange-100 text-[#eb6100]">실시간 반영</span>
+              </div>
+              <div>
+                <div class="text-2xl font-black text-slate-900 tracking-tight" id="calcTotalCost">14.1 <span class="text-xs font-normal text-slate-400">억 원</span></div>
+                <div class="text-xs font-black" id="calcDiffCost">기준 예산 범위 내 안정</div>
+              </div>
+              <div class="text-[11px] text-slate-600 border-t border-orange-100 pt-2 font-bold" id="calcUnitCost">예상단가: ₩ 1,413,100/Ton</div>
+            </div>
+
+            <!-- 시나리오 C: 비관 -->
+            <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-bold text-slate-600">시나리오 C (비관)</span>
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-50 text-rose-700">+12% / 1,420원</span>
+              </div>
+              <div>
+                <div class="text-2xl font-black text-slate-900 tracking-tight">15.4 <span class="text-xs font-normal text-slate-400">억 원</span></div>
+                <div class="text-xs font-bold text-rose-600 mt-1">▲ 1.3억 원 예산 초과</div>
+              </div>
+              <div class="text-[11px] text-slate-400 border-t border-slate-100 pt-2">예상단가: ₩ 1,544,100/Ton</div>
+            </div>
+
+          </div>
+
+          <!-- 주요 영향 요인 및 AI 인사이트 -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3">
+            <div class="flex items-center gap-2 text-sm font-black text-slate-900 pb-2 border-b border-slate-100">
+              <i class="fa-solid fa-lightbulb text-amber-500"></i>
+              <span>시나리오별 민감도 분석 및 AI 조달 인사이트</span>
+            </div>
+            <div class="text-xs text-slate-600 leading-relaxed space-y-2" id="impactInsight">
+              <!-- Dynamic Content via JS -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- 3. JavaScript Logic (품목 변경 및 시뮬레이터 연동) -->
+  <!-- ======================================================== -->
+  <script>
+    // Tab switching function
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('border-[#eb6100]', 'text-[#eb6100]', 'font-black');
+        b.classList.add('border-transparent', 'text-slate-500', 'font-bold');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      btn.classList.remove('border-transparent', 'text-slate-500', 'font-bold');
+      btn.classList.add('border-[#eb6100]', 'text-[#eb6100]', 'font-black');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // 한화첨단소재 도메인 데이터 모델 (UA-14 연계)
+    const MATERIAL_MODELS = {
+      'PP': {
+        basePriceDollar: 895, // $/Ton
+        actualPriceWon: 1413100, // 원/Ton
+        targetPriceWon: 1408500,
+        fixedCost: 120000,
+        action: 'SPLIT_BUY (지금 150톤 체결 권고, 4주 후 분할 매입)',
+        actionClass: 'bg-amber-50 text-amber-900 border-amber-300',
+        reliability: '높음 (95.4% · 결측치 0건 · Platts 정합)',
+        briefing: '현재 프로필렌(C3) 시장가는 톤당 <strong>$895</strong>로 안정적이며, 당사 목표원가(₩1,408,500) 대비 실구매단가 편차는 <strong>+0.32%(+₩4,600)</strong> 수준으로 안정권에 수렴해 있습니다. 다만 <strong>사내 원자재 창고 적재율이 84.5%(여유 캐파 150톤)</strong>에 도달해 있어 일괄 조달 시 불필요한 보관료가 발생합니다. 따라서 <span class="text-[#eb6100] font-black underline decoration-orange-300 underline-offset-4">여유 캐파에 맞춰 1차로 150톤을 즉시 매입하고, 잔여 소요량은 중국 PDH 증설에 따른 추가 단가 하락을 확인한 후 분할 매입(SPLIT_BUY)</span>하는 방어적 전략을 권고합니다.',
+        rawIndex: 'Platts FOB Korea $895.00 / MT',
+        spread: '$ 407.0',
+        spreadPct: '+41.3%',
+        histAvg: '₩ 1,438,000',
+        newsRisk: '공급과잉 (하방 압력)',
+        newsRiskClass: 'bg-blue-100 text-blue-800',
+        news1: '동북아 C3 프로필렌 신규 PDH 60만 톤 설비 가동 개시… 역내 현물가 하향세',
+        news2: 'OPEC+ 감산 논의 지속에도 아시아 석유화학 증설 물량 출회'
+      },
+      'EVA': {
+        basePriceDollar: 1310,
+        actualPriceWon: 1814870,
+        targetPriceWon: 1748000,
+        fixedCost: 86600,
+        action: 'BUY_WATCH (현물 매입 일시 보류 및 선물 환헤지 50% 권고)',
+        actionClass: 'bg-blue-50 text-blue-900 border-blue-300',
+        reliability: '높음 (93.8% · ICIS 아시아 에틸렌 지표 연동)',
+        briefing: '태양광 Encapsulant용 EVA 수지는 에틸렌 NCC 정기보수로 주간 <strong>+1.95% 상승($1,310/MT)</strong> 반등세를 보이고 있으며, <strong>원/달러 환율(1,385.4원) 상승 부담</strong>이 가중되고 있습니다. 당사 목표원가(₩1,748,000) 대비 현재 매입 단가 편차가 +3.8%로 임계 Alert 구간에 근접했습니다. 단기 과열 구간이므로 <span class="text-blue-700 font-black underline decoration-blue-300 underline-offset-4">대량 스팟 매입을 관망(BUY_WATCH)하고 최소 생산 소요량만 조달하며 환율 변동에 대응한 환헤지 비율 확대를 권고</span>합니다.',
+        rawIndex: 'ICIS CFR NE Asia Ethylene $860 + VAM',
+        spread: '$ 450.0',
+        spreadPct: '+34.3%',
+        histAvg: '₩ 1,760,000',
+        newsRisk: '공급 타이트 (상승 압력)',
+        newsRiskClass: 'bg-rose-100 text-rose-800',
+        news1: '아시아 주요 에틸렌 NCC 추계 정기보수 돌입, EVA 수지 원가 상승 가중',
+        news2: '글로벌 태양광 모듈사 4분기 설치 수요 지속으로 단기 지지선 형성'
+      },
+      'M10': {
+        basePriceDollar: 1480,
+        actualPriceWon: 2050390,
+        targetPriceWon: 1980000,
+        fixedCost: 150000,
+        action: 'IMMEDIATE_BUY (결품 방지용 2개월분 안전재고 즉시 전량 조달)',
+        actionClass: 'bg-rose-50 text-rose-900 border-rose-300',
+        reliability: '보통 (88.5% · 북미 수입 통관 프리미엄 반영 중)',
+        briefing: 'SuperLite 핵심 보강재인 M10 N214002(유리섬유)는 <strong>북미 오웬스코닝 용융로 화재로 글로벌 조달 리드타임이 +1.5주 지연</strong>되고 있으며, 공급사 집중도(HHI 3,420)가 매우 높은 과점 상태입니다. 사내 안전재고 잔여일수가 9일에 불과하여 생산 라인 결품 리스크가 극도로 높습니다. 단가 프리미엄 상승 전 <span class="text-rose-700 font-black underline decoration-rose-300 underline-offset-4">가용 예산 한도 내에서 2개월분의 소요 물량을 지체 없이 즉시 선구매(IMMEDIATE_BUY)</span>하여 수급 안전성을 확보하십시오.',
+        rawIndex: 'China Glass Fiber Spot $1,480.00 / MT',
+        spread: '$ 625.0',
+        spreadPct: '+42.2%',
+        histAvg: '₩ 1,990,000',
+        newsRisk: '공장 가동중단 (심각)',
+        newsRiskClass: 'bg-rose-100 text-rose-800',
+        news1: '북미 오웬스코닝 용융로 화재로 긴급 가동중단… 유리섬유 매트 수급 병목',
+        news2: '중국 내륙 무기질 복합소재 제련 라인 전력 제한으로 감산 지속'
+      }
+    };
+
+    let currentItemKey = 'PP';
+
+    function onMaterialChange(itemKey) {
+      currentItemKey = itemKey;
+      const model = MATERIAL_MODELS[itemKey];
+      if (!model) return;
+
+      // 탭 1 뷰 업데이트
+      document.getElementById('decisionBadge').className = `inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-sm font-black border shadow-xs ${model.actionClass}`;
+      document.getElementById('decisionActionText').innerText = model.action;
+      document.getElementById('reliabilityText').innerText = model.reliability;
+      document.getElementById('decisionBriefingText').innerHTML = model.briefing;
+
+      document.getElementById('actualPriceVal').innerHTML = `${formatWon(model.actualPriceWon)} <span class="text-xs font-normal text-slate-400">/ Ton</span>`;
+      document.getElementById('targetPriceVal').innerText = `${formatWon(model.targetPriceWon)} / Ton`;
+      
+      const gap = model.actualPriceWon - model.targetPriceWon;
+      const gapPct = (gap / model.targetPriceWon) * 100;
+      const gapElem = document.getElementById('priceGapVal');
+      gapElem.innerText = `${gap >= 0 ? '+' : ''}${formatWon(gap)} (${gap >= 0 ? '+' : ''}${gapPct.toFixed(2)}%)`;
+      gapElem.className = gapPct > 3 ? 'text-xs font-black text-rose-600' : 'text-xs font-black text-emerald-600';
+
+      const targetBadge = document.getElementById('targetStatusBadge');
+      if (gapPct > 3) {
+        targetBadge.innerText = '임계초과 (Alert)';
+        targetBadge.className = 'text-[11px] font-black px-2 py-0.5 rounded bg-rose-100 text-rose-800';
+      } else {
+        targetBadge.innerText = '목표가 안정 수렴 (Pass)';
+        targetBadge.className = 'text-[11px] font-black px-2 py-0.5 rounded bg-emerald-100 text-emerald-800';
+      }
+
+      document.getElementById('rawIndexVal').innerText = model.rawIndex;
+      document.getElementById('spreadVal').innerHTML = `${model.spread} <span class="text-xs font-normal text-slate-400">/ MT (${model.spreadPct})</span>`;
+      document.getElementById('histAvgPrice').innerHTML = `${model.histAvg} <span class="text-xs font-normal text-slate-400">/ Ton</span>`;
+
+      const newsBadge = document.getElementById('newsRiskBadge');
+      newsBadge.innerText = model.newsRisk;
+      newsBadge.className = `text-[11px] font-black px-2 py-0.5 rounded ${model.newsRiskClass}`;
+      document.getElementById('newsTitle1').innerText = model.news1;
+      document.getElementById('newsTitle2').innerText = model.news2;
+
+      // 탭 2 시뮬레이터 재계산
+      calculateScenario();
+    }
+
+    function formatWon(val) {
+      return '₩ ' + Math.round(val).toLocaleString('ko-KR');
+    }
+
+    // 시뮬레이터 프리셋 적용
+    function applyPreset(priceDelta, fx, split) {
+      document.getElementById('priceDelta').value = priceDelta;
+      document.getElementById('fxRate').value = fx;
+      document.getElementById('splitRate').value = split;
+      calculateScenario();
+    }
+
+    // What-If 시나리오 동적 계산기 (한화첨단소재 톤 단위 연동)
+    function calculateScenario() {
+      const model = MATERIAL_MODELS[currentItemKey];
+      const basePrice = model.basePriceDollar; // $/Ton
+      const fixedCost = model.fixedCost; // 가공비 원/Ton
+      
+      const priceDelta = parseFloat(document.getElementById('priceDelta').value);
+      const fxRate = parseFloat(document.getElementById('fxRate').value);
+      const reqQty = parseFloat(document.getElementById('reqQty').value); // Ton
+      const splitRate = parseFloat(document.getElementById('splitRate').value); // %
+
+      // 레이블 갱신
+      document.getElementById('priceDeltaVal').innerText = (priceDelta > 0 ? '+' : '') + priceDelta + '%';
+      document.getElementById('fxVal').innerText = fxRate.toLocaleString() + '원';
+      document.getElementById('qtyVal').innerText = reqQty.toLocaleString() + ' Ton';
+      document.getElementById('splitVal').innerText = splitRate + '% 즉시';
+
+      // 1. 현재 기준 즉시 구매 단가 (원/Ton)
+      const currentUnitTon = (basePrice * 1385.4) + fixedCost;
+      
+      // 2. 변동 시나리오 후속 구매 단가 (원/Ton)
+      const futureBasePrice = basePrice * (1 + priceDelta / 100);
+      const futureUnitTon = (futureBasePrice * fxRate) + fixedCost;
+
+      // 3. 가중평균 예상 구매단가 (원/Ton)
+      const avgUnitTon = (currentUnitTon * (splitRate / 100)) + (futureUnitTon * (1 - splitRate / 100));
+
+      // 4. 총 구매비용 (억원 단위)
+      const totalCostWon = avgUnitTon * reqQty;
+      const totalCostEok = (totalCostWon / 100000000).toFixed(1);
+
+      // 5. 기준 예산 (변동 없이 100% 현재가 기준 구매 시)
+      const baseTotalCostEok = (currentUnitTon * reqQty) / 100000000;
+      const diffCostEok = (totalCostEok - baseTotalCostEok).toFixed(1);
+
+      // UI 결과 반영
+      document.getElementById('calcTotalCost').innerHTML = `${totalCostEok} <span class="text-xs font-normal text-slate-400">억 원</span>`;
+      document.getElementById('calcUnitCost').innerText = `예상단가: ${formatWon(avgUnitTon)}/Ton`;
+
+      const diffEl = document.getElementById('calcDiffCost');
+      if (diffCostEok > 0) {
+        diffEl.className = 'text-xs font-black text-rose-600';
+        diffEl.innerText = `▲ 기준 대비 +${diffCostEok}억 원 추가 비용`;
+      } else if (diffCostEok < 0) {
+        diffEl.className = 'text-xs font-black text-emerald-600';
+        diffEl.innerText = `▼ 기준 대비 ${Math.abs(diffCostEok)}억 원 비용 절감`;
+      } else {
+        diffEl.className = 'text-xs font-black text-slate-700';
+        diffEl.innerText = '기준 예산 범위 내 안정';
+      }
+
+      // 동적 시뮬레이션 인사이트 생성
+      const fxSensitivityEok = ((reqQty * basePrice * 10) / 100000000).toFixed(2);
+      document.getElementById('impactInsight').innerHTML = `
+        <div>• <strong>환율 민감도:</strong> 원/달러 환율이 10원 상승할 때마다 ${currentItemKey} 구매비용은 약 <strong>${fxSensitivityEok}억 원</strong>씩 증가합니다.</div>
+        <div>• <strong>분할 구매 헤지 효과:</strong> 현재 설정하신 <strong>${splitRate}% 선구매</strong>를 적용하여 잔여 소요량(${100 - splitRate}%)에 대해서만 후속 시세 변동 위험이 노출됩니다.</div>
+        <div>• <strong>목표원가 대비 채산성:</strong> 시뮬레이션 가중평균 예상단가는 <strong>${formatWon(avgUnitTon)}/Ton</strong>으로, 목표원가(${formatWon(model.targetPriceWon)}) 대비 ${avgUnitTon <= model.targetPriceWon ? '<span class="text-emerald-700 font-bold">안정적 마진 확보가 가능</span>' : '<span class="text-rose-700 font-bold">목표원가 초과 위험이 있어 계약조건 재검토가 필요</span>'}합니다.</div>
+      `;
+    }
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      onMaterialChange('PP');
+    });
+  </script>
+</body>
+</html>

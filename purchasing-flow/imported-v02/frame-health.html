@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한화첨단소재 Market Health 대시보드 (UA-10)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif; }
+    
+    /* Industry Price 카드 전용 스타일 */
+    .industry-card {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .industry-bar-blue { border-left: 5px solid #1d4ed8; }
+    .industry-bar-red { border-left: 5px solid #dc2626; }
+    .industry-bar-green { border-left: 5px solid #16a34a; }
+
+    /* Custom Ticker Card */
+    .ticker-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+  </style>
+<style>body > aside { display: none !important; } body > main { width: 100%; }</style></head>
+<body class="bg-[#f8f9fa] text-slate-800 min-h-screen flex antialiased">
+
+  <!-- ======================================================== -->
+  <!-- 1. 좌측 LNB 사이드바 (Market Health 단일 메뉴 중심) -->
+  <!-- ======================================================== -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 min-h-screen sticky top-0 h-screen z-40">
+    <div>
+      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-100">
+        <div>
+          <span class="text-base font-black text-[#eb6100] tracking-tight block">한화첨단소재</span>
+          <span class="text-[11px] text-slate-400 font-medium block">AI 구매 의사결정 Agent</span>
+        </div>
+        <button class="w-8 h-8 rounded-lg bg-[#fff5ed] text-[#eb6100] border border-[#fcdbc7] flex items-center justify-center">
+          <i class="fa-solid fa-bars text-xs"></i>
+        </button>
+      </div>
+
+      <div class="px-3 py-4">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">MENU</span>
+        <nav class="space-y-1.5">
+          <!-- 활성화 메뉴: Market Health (UA-10) -->
+          <a href="#" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-bold bg-[#fbeee6] text-[#eb6100] transition">
+            <div class="flex items-center">
+              <i class="fa-solid fa-gauge-high w-5 text-base mr-2.5 text-[#eb6100]"></i>
+              <span>Market Health (UA-10)</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#eb6100] text-white font-bold">ACTIVE</span>
+          </a>
+
+          <!-- 비활성 보조 메뉴들 -->
+          <div class="pt-2 border-t border-slate-100 space-y-1 opacity-50 cursor-not-allowed">
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-table-cells-large w-5 text-sm mr-2.5"></i>
+              <span>전체 대시보드 (UA-09)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-arrow-trend-up w-5 text-sm mr-2.5"></i>
+              <span>구매원가·의사결정</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-newspaper w-5 text-sm mr-2.5"></i>
+              <span>글로벌 뉴스 분석 (UA-13)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-gear w-5 text-sm mr-2.5"></i>
+              <span>산식·기준 관리 (UA-16)</span>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- 사용자 프로필 -->
+    <div class="p-4 border-t border-slate-100 flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-full bg-[#eb6100] text-white font-bold flex items-center justify-center text-xs shadow-sm">
+        김H
+      </div>
+      <div>
+        <div class="text-xs font-bold text-slate-800">김태화</div>
+        <div class="text-[11px] text-slate-400">구매SCM팀 &bull; DX</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- 2. 메인 컨텐츠 영역 (Market Health 집중 구현) -->
+  <!-- ======================================================== -->
+  <main class="flex-1 min-w-0 p-8 space-y-6 overflow-y-auto">
+
+    <!-- [상단 헤더] Title & 기준 제어 -->
+    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded bg-orange-100 text-[#eb6100] font-black text-xs">UA-10 MARKET HEALTH</span>
+          <span class="text-xs text-slate-400">한화첨단소재 3대 원재료 밸류체인 시세·수급·리스크 모니터링 </span>
+        </div>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">Industry Price &amp; Market Health Dashboard</h1>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3 text-xs">
+        <!-- 갱신 시간 -->
+        <div class="flex items-center space-x-1 text-slate-500 px-2.5 py-1.5 bg-slate-100 rounded-lg font-mono">
+          <i class="fa-solid fa-clock-rotate-left text-slate-400 mr-1"></i>
+          <span>동기화: <strong class="text-slate-800 font-bold">2026-09-22 14:00</strong></span>
+        </div>
+
+        <button onclick="refreshDashboard()" class="px-3.5 py-1.5 bg-[#eb6100] text-white font-bold rounded-lg hover:bg-[#d95300] shadow-sm transition flex items-center">
+          <i class="fa-solid fa-rotate mr-1.5" id="refresh-icon"></i>
+          <span>새로고침 </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 1단: Industry Price 카드 바 (한화첨단소재 원재료 1:1)  -->
+    <!-- ============================================================= -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3">
+      
+      <!-- 카드 1: 원유 (Dubai / Brent / WTI 선택 연동)  -->
+      <div class="lg:col-span-2 industry-card industry-bar-blue p-3 flex justify-between items-stretch">
+        <div class="flex flex-col justify-center space-y-1 text-xs font-bold text-slate-700 pr-1">
+          <label class="flex items-center cursor-pointer">
+            <input type="radio" name="oil-type" value="Dubai" checked onchange="updateOilCard('Dubai')" class="accent-blue-600 mr-1.5">
+            <span>두바이 </span>
+          </label>
+          <label class="flex items-center cursor-pointer">
+            <input type="radio" name="oil-type" value="Brent" onchange="updateOilCard('Brent')" class="accent-blue-600 mr-1.5">
+            <span>Brent </span>
+          </label>
+          <label class="flex items-center cursor-pointer">
+            <input type="radio" name="oil-type" value="WTI" onchange="updateOilCard('WTI')" class="accent-blue-600 mr-1.5">
+            <span>WTI </span>
+          </label>
+        </div>
+        <div class="flex items-center pl-1">
+          <span id="oil-card-value" class="text-2xl font-normal text-slate-900 tracking-tight">73.8 </span>
+        </div>
+        <div class="flex flex-col justify-between items-end text-right pl-1">
+          <span class="text-[10px] text-slate-400 font-medium">USD/bbl </span>
+          <div id="oil-card-change" class="text-[11px] font-bold text-blue-600 leading-tight">
+            <div>-0.15 </div>
+            <div>-0.20% </div>
+          </div>
+          <span id="oil-card-date" class="text-[9px] text-slate-400">2026-09-22</span>
+        </div>
+      </div>
+
+      <!-- 카드 2: Naphtha (MOPJ) - 기초유분  -->
+      <div class="lg:col-span-2 industry-card industry-bar-red p-3 flex justify-between items-stretch">
+        <div class="flex flex-col justify-between">
+          <span class="text-xs font-extrabold text-slate-900 tracking-tight">Naphtha (MOPJ) </span>
+          <div class="text-2xl font-normal text-slate-900 tracking-tight mt-1">578.0 </div>
+          <span class="text-[10px] text-slate-400 font-medium">Spot (기초유분)</span>
+        </div>
+        <div class="flex flex-col justify-between items-end text-right">
+          <span class="text-[10px] text-slate-400 font-medium">USD/MT </span>
+          <div class="text-[11px] font-bold text-red-600 leading-tight">
+            <div>+3.25 </div>
+            <div>+0.56% </div>
+          </div>
+          <span class="text-[9px] text-slate-400">2026-09-22</span>
+        </div>
+      </div>
+
+      <!-- 카드 3: PP (폴리프로필렌 수지) - 한화 원재료  -->
+      <div class="lg:col-span-2 industry-card industry-bar-blue p-3 flex justify-between items-stretch">
+        <div class="flex flex-col justify-between">
+          <span class="text-xs font-black text-slate-900 tracking-tight">PP (폴리프로필렌 수지) </span>
+          <div class="text-2xl font-normal text-slate-900 tracking-tight mt-1">985.0 </div>
+          <span class="text-[10px] text-slate-400 font-medium">Spot (StrongLite) </span>
+        </div>
+        <div class="flex flex-col justify-between items-end text-right">
+          <span class="text-[10px] text-slate-400 font-medium">USD/MT </span>
+          <div class="text-[11px] font-bold text-blue-600 leading-tight">
+            <div>-15.00 </div>
+            <div>-1.50% </div>
+          </div>
+          <span class="text-[9px] text-slate-400">2026-09-22</span>
+        </div>
+      </div>
+
+      <!-- 카드 4: EVA Resin (에틸렌비닐아세테이트) - 한화 원재료  -->
+      <div class="lg:col-span-2 industry-card industry-bar-red p-3 flex justify-between items-stretch">
+        <div class="flex flex-col justify-between">
+          <span class="text-xs font-black text-slate-900 tracking-tight">EVA Resin (태양광용) </span>
+          <div class="text-2xl font-normal text-slate-900 tracking-tight mt-1">1,310.0 </div>
+          <span class="text-[10px] text-slate-400 font-medium">Weekly (Encapsulant) </span>
+        </div>
+        <div class="flex flex-col justify-between items-end text-right">
+          <span class="text-[10px] text-slate-400 font-medium">USD/MT </span>
+          <div class="text-[11px] font-bold text-red-600 leading-tight">
+            <div>+25.00 </div>
+            <div>+1.95% </div>
+          </div>
+          <span class="text-[9px] text-slate-400">2026-09-20</span>
+        </div>
+      </div>
+
+      <!-- 카드 5: USD/KRW 환율  -->
+      <div class="lg:col-span-2 industry-card industry-bar-green p-3 flex justify-between items-stretch">
+        <div class="flex flex-col justify-between">
+          <span class="text-xs font-black text-slate-900 tracking-tight">USD / KRW 환율 </span>
+          <div class="text-2xl font-normal text-slate-900 tracking-tight mt-1">1,385.4 </div>
+          <span class="text-[10px] text-slate-400 font-medium">한국은행 매매기준율 </span>
+        </div>
+        <div class="flex flex-col justify-between items-end text-right">
+          <span class="text-[10px] text-slate-400 font-medium">KRW/USD </span>
+          <div class="text-[11px] font-bold text-red-600 leading-tight">
+            <div>+4.20</div>
+            <div>+0.30%</div>
+          </div>
+          <span class="text-[9px] text-slate-400">2026-09-22</span>
+        </div>
+      </div>
+
+      <!-- 카드 6: M10 N214002 - 한화 원재료  -->
+      <div class="lg:col-span-2 industry-card industry-bar-green p-3 flex justify-between items-stretch">
+        <div class="flex flex-col justify-between">
+          <span class="text-xs font-black text-slate-900 tracking-tight">M10 N214002 </span>
+          <div class="text-2xl font-normal text-slate-900 tracking-tight mt-1">1,480.0 </div>
+          <span class="text-[10px] text-slate-400 font-medium">Spot (유리섬유 복합) </span>
+        </div>
+        <div class="flex flex-col justify-between items-end text-right">
+          <span class="text-[10px] text-slate-400 font-medium">USD/MT </span>
+          <div class="text-[11px] font-bold text-slate-800 leading-tight">
+            <div>0.00 </div>
+            <div>0.00% </div>
+          </div>
+          <span class="text-[9px] text-slate-400">2026-09-22</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 2단: 4대 핵심 영역(Pillar) KPI 진단 카드  -->
+    <!-- ============================================================= -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Pillar 1: 가격 건전성 (Price Health) -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3 hover:border-slate-300 transition">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-black text-sm text-slate-900 flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-600 mr-2"></span>1. 가격 건전성 (Price Health) 
+          </h3>
+          <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-[10px]">정상 우수 </span>
+        </div>
+        <div class="space-y-2.5 text-xs">
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="산출공식: [(자사 실발주 단가 - 글로벌 ICIS 지표) / 글로벌 지표] × 100&#10;모니터링 목적: 시장 시세 대비 고가 매입 여부 검증 ">
+            <span class="text-slate-600 flex items-center">Benchmark vs. PO Spread  <i class="fa-regular fa-circle-question text-slate-400 ml-1 text-[10px]"></i></span>
+            <span class="font-black text-emerald-600 text-sm">-3.54% (우수)</span>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="산출공식: 최근 30/90일간 시장 시세의 표준편차 (σ)&#10;모니터링 목적: 원자재 원가 급등락 변동성 사전 감지 ">
+            <span class="text-slate-600 flex items-center">Price Volatility Index (σ)  <i class="fa-regular fa-circle-question text-slate-400 ml-1 text-[10px]"></i></span>
+            <span class="font-bold text-slate-900 text-sm">4.2% (안정) </span>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="산출공식: 제품 판매 단가 - 주원료 투입 원가(Naphtha/Monomer)&#10;모니터링 목적: 마진 스프레드 축소 리스크 모니터링 ">
+            <span class="text-slate-600 flex items-center">Clean / Crack Spread  <i class="fa-regular fa-circle-question text-slate-400 ml-1 text-[10px]"></i></span>
+            <span class="font-black text-[#eb6100] text-sm">$407.0 / MT</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pillar 2: 수급 밸런스 (Supply & Demand)  -->
+      <div class="bg-white rounded-xl border-2 border-amber-400 p-5 shadow-sm space-y-3 bg-amber-50/10">
+        <div class="flex justify-between items-center pb-2 border-b border-amber-200">
+          <h3 class="font-black text-sm text-slate-900 flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 mr-2"></span>2. 수급 밸런스 (S &amp; D) 
+          </h3>
+          <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-extrabold text-[10px]">수급 타이트 </span>
+        </div>
+        <div class="space-y-2.5 text-xs">
+          <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center cursor-help"
+               title="산출공식: 글로벌·지역 재고량 / 일평균 소비·수요량&#10;모니터링 목적: 시장 전반의 타이트(Tight) 여부 파악 ">
+            <span class="text-amber-950 font-bold flex items-center">Market DOS  <i class="fa-regular fa-circle-question text-amber-600 ml-1 text-[10px]"></i></span>
+            <span class="font-black text-amber-700 text-sm">24.5일 (주의 ⚠️) </span>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="산출공식: 주요 업스트림 제조사 가동률 및 정기보수(TA) 비율&#10;모니터링 목적: 공급 부족 및 병목 징후 조기 포착 ">
+            <span class="text-slate-600 flex items-center">Upstream 가동률 (TA율)  <i class="fa-regular fa-circle-question text-slate-400 ml-1 text-[10px]"></i></span>
+            <span class="font-bold text-slate-900 text-sm">78.4% (TA 14.2%)</span>
+          </div>
+          <div class="p-2.5 bg-rose-50 rounded-lg border border-rose-200 flex justify-between items-center cursor-help"
+               title="산출공식: 현재 시장 납기(주) - 정상 기준 납기(주)&#10;모니터링 목적: 리드타임 급증에 따른 안전재고 확대 판단 ">
+            <span class="text-rose-950 font-black flex items-center">Market Lead Time Delta  <i class="fa-regular fa-circle-question text-rose-600 ml-1 text-[10px]"></i></span>
+            <span class="font-black text-rose-600 text-sm">+1.5주 (지연 🚨) </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pillar 3: 공급망 안정성 (Supply Risk)  -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3 hover:border-slate-300 transition">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-black text-sm text-slate-900 flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-600 mr-2"></span>3. 공급망 안정성 (Risk) 
+          </h3>
+          <span class="px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-bold text-[10px]">과점 리스크 </span>
+        </div>
+        <div class="space-y-2.5 text-xs">
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="산출공식: (정시 정량 입고 건수 / 총 납품 건수) × 100&#10;모니터링 목적: 핵심 공급사의 실질적 이행 능력 점검 ">
+            <span class="text-slate-600 flex items-center">OTIF (정시정량 입고율)  <i class="fa-regular fa-circle-question text-slate-400 ml-1 text-[10px]"></i></span>
+            <span class="font-black text-emerald-600 text-sm">94.2% (목표근접) </span>
+          </div>
+          <div class="p-2.5 bg-rose-50 rounded-lg border border-rose-200 flex justify-between items-center cursor-help"
+               title="산출공식: ∑ (공급사별 조달 비중 %)^2&#10;모니터링 목적: 단일 공급사 락인 및 의존 리스크 측정 ">
+            <span class="text-rose-950 font-black flex items-center">HHI (수급 집중도)  <i class="fa-regular fa-circle-question text-rose-600 ml-1 text-[10px]"></i></span>
+            <span class="font-black text-rose-600 text-sm">3,420 (과점 🚨) </span>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="산출공식: 공급사의 알트만 Z-스코어 또는 신용평가 변동치&#10;모니터링 목적: 부도, 법정관리 등 공급망 중단 예방 ">
+            <span class="text-slate-600 flex items-center">Financial Distress (Z-Score)  <i class="fa-regular fa-circle-question text-slate-400 ml-1 text-[10px]"></i></span>
+            <span class="font-bold text-emerald-700 text-sm">3.12 (안전) </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pillar 4: 거시 환경 (Macro Context)  -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-3 hover:border-slate-300 transition">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <h3 class="font-black text-sm text-slate-900 flex items-center">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 mr-2"></span>4. 거시 환경 (Macro) 
+          </h3>
+          <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px]">선행 요인 </span>
+        </div>
+        <div class="space-y-2.5 text-xs">
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="원유(Dubai/WTI): 전사 화학원료 도입원가의 최선행 거시 지표">
+            <span class="text-slate-600">원유 지표 (Dubai / WTI) </span>
+            <span class="font-black text-slate-900 text-sm" id="card-oil-val">$73.8 / $71.6</span>
+          </div>
+          <div class="p-2.5 bg-orange-50/50 rounded-lg border border-orange-200 flex justify-between items-center cursor-help"
+               title="USD/KRW 기준 환율: 수입 원자재 원화 정산 압박 지표">
+            <span class="text-orange-950 font-bold">USD/KRW 기준 환율 </span>
+            <span class="font-black text-[#eb6100] text-sm">1,385.40원 </span>
+          </div>
+          <div class="p-2.5 bg-slate-50 rounded-lg flex justify-between items-center cursor-help"
+               title="상하이 컨테이너 운임지수(SCFI): 해상 수입 물류비 선행 변동 추적">
+            <span class="text-slate-600">물류비 지수 (SCFI) </span>
+            <span class="font-bold text-slate-900 text-sm">1,842.5 pt (+3.2%) </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 3단: 거시 변동폭 vs 구매원가 싱크로율 정규화 차트  -->
+    <!-- ============================================================= -->
+    <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
+      <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-100 gap-3">
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-black text-xs">CORRELATION</span>
+            <h3 class="font-extrabold text-base text-slate-900">선행 거시 변동폭 vs 자사 구매원가 싱크로율 시각화 </h3>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5" id="chart-desc">
+            거시 복합 선행 지표(유가+환율+운임)가 4주 후 자사 원자재 실구매원가에 88% 수렴 연동되는 추이 
+          </p>
+        </div>
+
+        <div class="flex items-center space-x-3 text-xs">
+          <!-- 보기 모드 전환 -->
+          <div class="inline-flex rounded-lg p-1 bg-slate-100 border border-slate-200 font-bold">
+            <button onclick="setChartMode('indexed')" id="btn-mode-indexed" class="px-3 py-1 rounded bg-white text-slate-900 shadow-xs transition">
+              지수화 (Base 100) 
+            </button>
+            <button onclick="setChartMode('absolute')" id="btn-mode-absolute" class="px-3 py-1 rounded text-slate-500 hover:text-slate-900 transition">
+              절대단가 ($/원) 
+            </button>
+          </div>
+
+          <!-- Lag 선택 -->
+          <div class="flex items-center space-x-1.5 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1">
+            <span class="text-slate-500 font-medium">Lag:</span>
+            <select id="sel-chart-lag" onchange="onChartLagChange(this.value)" class="bg-transparent font-black text-[#eb6100] outline-none cursor-pointer">
+              <option value="0">0주 (단순비교) ▼ </option>
+              <option value="2">2주 시차 ▼ </option>
+              <option value="4" selected>4주 (권고 최적) ▼ </option>
+              <option value="6">6주 시차 ▼ </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="h-80 w-full">
+        <canvas id="syncCorrelationChart"></canvas>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 4단: 즉각 조치 필요 품목 및 권고 조달 전략 (Actionable Table)  -->
+    <!-- ============================================================= -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-3 bg-rose-50/20">
+        <div class="flex items-center space-x-2.5">
+          <span class="flex h-3 w-3 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-600"></span>
+          </span>
+          <div>
+            <h3 class="font-black text-base text-slate-900">🚨 즉각 조치 필요 품목 및 권고 조달 전략 (PO 실행 연동) </h3>
+            <p class="text-xs text-slate-400 mt-0.5">한화첨단소재 핵심 원재료(PP, EVA, M10)의 수급 타이트 및 납기 지연 실무 발주 조치 </p>
+          </div>
+        </div>
+        <span class="px-3 py-1 bg-rose-100 text-rose-800 rounded-full font-black text-xs border border-rose-200">
+          총 3건 대응 조치 대기 
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-4">대상 원재료</th>
+              <th class="py-3 px-4">주요 리스크 요인 (감지 지표)</th>
+              <th class="py-3 px-4 text-center">AI 진단 상태</th>
+              <th class="py-3 px-4">권고 조달 전략 (UA-14)</th>
+              <th class="py-3 px-4 text-right">예상 소요 예산</th>
+              <th class="py-3 px-4 text-center">실무 조달 연동 액션</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            <!-- 1. M10 N214002 -->
+            <tr class="hover:bg-slate-50 bg-rose-50/10">
+              <td class="py-4 px-4 font-black text-slate-900">
+                M10 N214002 (유리섬유) 
+                <span class="text-[10px] text-slate-400 font-normal block">SuperLite 핵심 원재료 </span>
+              </td>
+              <td class="py-4 px-4">
+                <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-black text-[10px] mr-1">납기 +1.5주 지연 </span>
+                <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-black text-[10px]">HHI 3,420 (과점) </span>
+                <p class="text-[11px] text-slate-600 mt-1">북미 용융로 화재 여파로 수입선 병목 가속화 </p>
+              </td>
+              <td class="py-4 px-4 text-center">
+                <span class="px-2.5 py-1 rounded bg-rose-600 text-white font-black text-xs">CRITICAL</span>
+              </td>
+              <td class="py-4 px-4">
+                <span class="font-black text-rose-700 text-xs block">IMMEDIATE_BUY (즉시 선구매) </span>
+                <span class="text-[11px] text-slate-500">결품 방지용 2개월분 안전재고 선제 발주 </span>
+              </td>
+              <td class="py-4 px-4 text-right font-black text-slate-900">₩ 1,445,000,000</td>
+              <td class="py-4 px-4 text-center">
+                <button onclick="alert('SAP 긴급 안전재고 구매 결재 기안(PO-GF-2609) 초안이 생성되었습니다.')" 
+                        class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded shadow transition">
+                  SAP 긴급 PO 기안 
+                </button>
+              </td>
+            </tr>
+
+            <!-- 2. PP Resin -->
+            <tr class="hover:bg-slate-50">
+              <td class="py-4 px-4 font-black text-slate-900">
+                PP Resin (사출급) 
+                <span class="text-[10px] text-slate-400 font-normal block">StrongLite 주원료 </span>
+              </td>
+              <td class="py-4 px-4">
+                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] mr-1">DOS 24.5일 (주의) </span>
+                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">마진 $407 건전 </span>
+                <p class="text-[11px] text-slate-600 mt-1">사내 창고 적재율 84.5%로 일괄 입고 부담 </p>
+              </td>
+              <td class="py-4 px-4 text-center">
+                <span class="px-2.5 py-1 rounded bg-amber-500 text-white font-black text-xs">WARNING</span>
+              </td>
+              <td class="py-4 px-4">
+                <span class="font-black text-[#eb6100] text-xs block">SPLIT_BUY (분할 구매) </span>
+                <span class="text-[11px] text-slate-500">1차 150톤 즉시 조달 후 4주 뒤 분할 입고 </span>
+              </td>
+              <td class="py-4 px-4 text-right font-black text-slate-900">
+                ₩ 211,965,000 <span class="text-[10px] text-slate-400 block font-normal">(1차 소요분) </span>
+              </td>
+              <td class="py-4 px-4 text-center">
+                <button onclick="alert('분할 발주 결재 기안(PO-PP-SPLIT-01) 초안이 생성되었습니다.')" 
+                        class="px-3.5 py-1.5 bg-[#eb6100] hover:bg-[#d95300] text-white font-bold rounded shadow transition">
+                  분할 PO 기안 
+                </button>
+              </td>
+            </tr>
+
+            <!-- 3. EVA Resin -->
+            <tr class="hover:bg-slate-50">
+              <td class="py-4 px-4 font-black text-slate-900">
+                EVA Resin (태양광용) 
+                <span class="text-[10px] text-slate-400 font-normal block">Encapsulant 봉지재 </span>
+              </td>
+              <td class="py-4 px-4">
+                <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-[10px] mr-1">주간 +1.95% 반등 </span>
+                <span class="px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-bold text-[10px]">환율 1,385원 부담 </span>
+                <p class="text-[11px] text-slate-600 mt-1">외화 직거래 비중 높아 환율 민감 </p>
+              </td>
+              <td class="py-4 px-4 text-center">
+                <span class="px-2.5 py-1 rounded bg-blue-600 text-white font-black text-xs">WATCH</span>
+              </td>
+              <td class="py-4 px-4">
+                <span class="font-black text-blue-700 text-xs block">BUY_WATCH (관망 및 환헤지) </span>
+                <span class="text-[11px] text-slate-500">현물 매입 보류, 선물 환율 헤지 50% 확대 권고 </span>
+              </td>
+              <td class="py-4 px-4 text-right font-bold text-slate-500">모니터링 유지 </td>
+              <td class="py-4 px-4 text-center">
+                <button onclick="alert('외환 시나리오 분석 화면으로 이동합니다.')" 
+                        class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-medium rounded shadow transition">
+                  외환 리스크 분석 
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- 5단: Market Health 10대 지표 종합 정의 매트릭스 테이블 -->
+    <!-- ============================================================= -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div>
+          <h3 class="font-extrabold text-base text-slate-900">Market Health 10대 지표 상세 정의 및 모니터링 매트릭스</h3>
+          <p class="text-xs text-slate-400 mt-0.5">사용자 정의 4대 분류 기준별 산출 공식, 현재값, 임계치 도달 여부 및 관리 목적</p>
+        </div>
+        <span class="text-xs text-slate-400 font-medium">기준일자: 2026-09-22</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+            <tr>
+              <th class="py-3 px-4">분류</th>
+              <th class="py-3 px-4">핵심 지표 (KPI)</th>
+              <th class="py-3 px-4">산출 방식 및 정의 공식</th>
+              <th class="py-3 px-4 text-right">현재 지표값</th>
+              <th class="py-3 px-4 text-center">정상/임계치 기준</th>
+              <th class="py-3 px-4">모니터링 목적</th>
+              <th class="py-3 px-4 text-center">상태 판정</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-slate-700">
+            
+            <!-- Category 1: 가격 건전성 -->
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-blue-900 bg-blue-50/20" rowspan="3">가격 건전성<br><span class="text-[10px] text-slate-400 font-normal">(Price Health)</span></td>
+              <td class="py-3.5 px-4 font-bold text-slate-900">Benchmark vs. PO Spread</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">[(자사 실발주단가 - 글로벌지표) / 글로벌지표] × 100</td>
+              <td class="py-3.5 px-4 text-right font-black text-emerald-600">- 3.54 %</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&le; +3.0% 이내</td>
+              <td class="py-3.5 px-4 text-slate-600">시장 시세 대비 고가 매입 여부 검증</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Pass (우수)</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-slate-900">Price Volatility Index</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">최근 30/90일간 시장 시세의 표준편차 (σ)</td>
+              <td class="py-3.5 px-4 text-right font-black text-slate-900">σ = 4.2 %</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&le; 5.0% 이내</td>
+              <td class="py-3.5 px-4 text-slate-600">원자재 원가 급등락 변동성 사전 감지</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Pass (안정)</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-slate-900">Clean / Crack Spread</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">제품 판매 단가 - 주원료 투입 원가(Naphtha/Monomer)</td>
+              <td class="py-3.5 px-4 text-right font-black text-[#eb6100]">$ 407.0 / MT</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&ge; $250 (BEP)</td>
+              <td class="py-3.5 px-4 text-slate-600">마진 스프레드 축소 리스크 모니터링</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">건전 마진</span></td>
+            </tr>
+
+            <!-- Category 2: 수급 밸런스 -->
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-amber-900 bg-amber-50/20" rowspan="3">수급 밸런스<br><span class="text-[10px] text-slate-400 font-normal">(Supply &amp; Demand)</span></td>
+              <td class="py-3.5 px-4 font-bold text-slate-900">Market Days of Supply (DOS)</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">글로벌·지역 재고량 / 일평균 소비·수요량</td>
+              <td class="py-3.5 px-4 text-right font-black text-amber-600">24.5 일</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&ge; 30.0 일</td>
+              <td class="py-3.5 px-4 text-slate-600">시장 전반의 타이트(Tight) 여부 파악</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">타이트 주의</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-slate-900">Upstream Operating Rate</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">주요 업스트림 제조사 가동률 및 정기보수(TA) 비율</td>
+              <td class="py-3.5 px-4 text-right font-black text-slate-900">78.4% (TA 14.2%)</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">가동률 &ge; 80%</td>
+              <td class="py-3.5 px-4 text-slate-600">공급 부족 및 병목 징후 조기 포착</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">안정 유지</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-slate-900">Market Lead Time Delta</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">현재 시장 납기(주) - 정상 기준 납기(주)</td>
+              <td class="py-3.5 px-4 text-right font-black text-rose-600">+ 1.5 주</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&le; 0.0 주</td>
+              <td class="py-3.5 px-4 text-slate-600">리드타임 급증에 따른 안전재고 확대 판단</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">납기 지연</span></td>
+            </tr>
+
+            <!-- Category 3: 공급망 안정성 -->
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-red-900 bg-red-50/20" rowspan="3">공급망 안정성<br><span class="text-[10px] text-slate-400 font-normal">(Supply Risk)</span></td>
+              <td class="py-3.5 px-4 font-bold text-slate-900">OTIF (On-Time In-Full)</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">(정시 정량 입고 건수 / 총 납품 건수) × 100</td>
+              <td class="py-3.5 px-4 text-right font-black text-emerald-600">94.2 %</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&ge; 95.0 %</td>
+              <td class="py-3.5 px-4 text-slate-600">핵심 공급사의 실질적 이행 능력 점검</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">목표 근접</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-slate-900">HHI (수급 집중도 지수)</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">∑ (공급사별 조달 비중 %)^2</td>
+              <td class="py-3.5 px-4 text-right font-black text-rose-600">3,420</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&le; 2,500 (적정)</td>
+              <td class="py-3.5 px-4 text-slate-600">단일 공급사 락인 및 의존 리스크 측정</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">의존도 과다</span></td>
+            </tr>
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-slate-900">Financial Distress Alert</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">공급사의 알트만 Z-스코어 및 신용평가 변동치</td>
+              <td class="py-3.5 px-4 text-right font-black text-emerald-600">Z = 3.12</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">&ge; 2.99 (안전)</td>
+              <td class="py-3.5 px-4 text-slate-600">부도, 법정관리 등 공급망 중단 예방</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">안전 구간</span></td>
+            </tr>
+
+            <!-- Category 4: 거시 환경 -->
+            <tr class="hover:bg-slate-50">
+              <td class="py-3.5 px-4 font-bold text-emerald-900 bg-emerald-50/20">거시 환경<br><span class="text-[10px] text-slate-400 font-normal">(Macro Context)</span></td>
+              <td class="py-3.5 px-4 font-bold text-slate-900">Raw Material Correlation</td>
+              <td class="py-3.5 px-4 font-mono text-slate-600">원유(Dubai/WTI), 환율(USD/KRW), 물류비(SCFI) 복합 지수</td>
+              <td class="py-3.5 px-4 text-right font-black text-[#eb6100]">상관계수 r=0.88</td>
+              <td class="py-3.5 px-4 text-center text-slate-500">4~6주 시차 전가</td>
+              <td class="py-3.5 px-4 text-slate-600">원자재 가격에 선행하는 외부 충격 추적</td>
+              <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">정상 추적</span></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- 3. JavaScript Logic (차트 및 상호작용) -->
+  <!-- ======================================================== -->
+  <script>
+    // 상단 Industry Price 유종별 데이터 
+    const OIL_CARD_DATA = {
+      Dubai: { value: '73.8', delta: '-0.15', rate: '-0.20%', isUp: false, date: '2026-09-22' },
+      Brent: { value: '74.9', delta: '-0.30', rate: '-0.43%', isUp: false, date: '2026-09-22' },
+      WTI:   { value: '71.6', delta: '-0.22', rate: '-0.31%', isUp: false, date: '2026-09-22' }
+    };
+
+    function updateOilCard(type) {
+      const item = OIL_CARD_DATA[type];
+      if (!item) return;
+
+      document.getElementById('oil-card-value').textContent = item.value;
+      const changeElem = document.getElementById('oil-card-change');
+      changeElem.innerHTML = `<div>${item.delta}</div><div>${item.rate}</div>`;
+      changeElem.className = `text-[11px] font-bold leading-tight ${item.isUp ? 'text-red-600' : 'text-blue-600'}`;
+      document.getElementById('oil-card-date').textContent = item.date;
+
+      // 상단 셀렉트박스와 라디오버튼 동기화
+      const radio = document.querySelector(`input[name="oil-type"][value="${type}"]`);
+      if (radio) radio.checked = true;
+
+      // 4대 지표 내 유가 텍스트 갱신
+      document.getElementById('card-oil-val').textContent = `$${item.value} / bbl`;
+
+      renderSyncChart();
+    }
+
+    function onOilBaseChange(val) {
+      updateOilCard(val);
+    }
+
+    function onCurrencyChange(val) {
+      alert(`기준 통화가 [${val}] 기준으로 화면 지표에 일괄 환산 적용되었습니다.`);
+    }
+
+    function refreshDashboard() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('fa-spin');
+      setTimeout(() => {
+        icon.classList.remove('fa-spin');
+        alert('최신 시장 데이터(Platts, ICIS, 한국은행 환율, SCFI)가 정상 동기화되었습니다.');
+      }, 700);
+    }
+
+    // =========================================================
+    // 3단 정규화 상관분석 차트 (지수화 vs 절대단가 & Lag 전환) 
+    // =========================================================
+    let syncChart = null;
+    let chartMode = 'indexed';
+    let currentChartLag = 4;
+
+    const rawLabels = ['8/04', '8/11', '8/18', '8/25', '9/01', '9/08', '9/15', '9/22(현재)'];
+    const indexedMacroLead = [100.0, 102.5, 104.2, 103.0, 105.8, 107.2, 106.5, 108.4];
+    const indexedCostByLag = {
+      0: [100.0, 100.8, 101.5, 101.2, 102.4, 103.1, 103.0, 104.2],
+      2: [99.5,  100.0, 101.8, 103.5, 102.8, 104.5, 106.0, 106.8],
+      4: [98.8,  99.6,  100.2, 102.4, 104.1, 103.2, 105.8, 107.8],
+      6: [97.5,  98.2,  99.0,  100.1, 101.5, 103.4, 102.8, 105.0]
+    };
+
+    const absMacroOil = [72.0, 73.5, 74.8, 73.9, 75.5, 76.8, 75.0, 73.8];
+    const absPPCost   = [1460, 1455, 1450, 1445, 1435, 1430, 1420, 1413];
+
+    function renderSyncChart() {
+      const canvas = document.getElementById('syncCorrelationChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let datasets = [];
+      let scales = {};
+
+      if (chartMode === 'indexed') {
+        datasets = [
+          {
+            label: '선행 거시 복합 변동 지수 (Base 100)',
+            data: indexedMacroLead,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.05)',
+            borderWidth: 2.5,
+            borderDash: [4, 4],
+            tension: 0.3,
+            yAxisID: 'yIndex'
+          },
+          {
+            label: `자사 PP 실구매원가 지수 [Lag ${currentChartLag}주 보정]`,
+            data: indexedCostByLag[currentChartLag],
+            borderColor: '#eb6100',
+            backgroundColor: 'rgba(235, 97, 0, 0.08)',
+            fill: true,
+            borderWidth: 3,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#eb6100',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            tension: 0.2,
+            yAxisID: 'yIndex'
+          }
+        ];
+
+        scales = {
+          yIndex: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: '정규화 지수 (Base 100)', font: { size: 10, weight: 'bold' } },
+            min: 95,
+            max: 115,
+            grid: { color: '#f1f5f9' }
+          }
+        };
+      } else {
+        datasets = [
+          {
+            label: '기준 원유가 ($/bbl) [좌측]',
+            data: absMacroOil,
+            borderColor: '#2563eb',
+            borderWidth: 2,
+            tension: 0.3,
+            yAxisID: 'yOil'
+          },
+          {
+            label: '자사 PP 실구매단가 (천원/Ton) [우측]',
+            data: absPPCost,
+            borderColor: '#eb6100',
+            backgroundColor: 'rgba(235, 97, 0, 0.08)',
+            fill: true,
+            borderWidth: 2.5,
+            yAxisID: 'yCost',
+            tension: 0.2
+          }
+        ];
+
+        scales = {
+          yOil: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: '원유가 ($/bbl)', font: { size: 10, weight: 'bold' } },
+            min: 65,
+            max: 85,
+            grid: { color: '#f1f5f9' }
+          },
+          yCost: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: 'PP 구매단가 (천원/Ton)', font: { size: 10, weight: 'bold' } },
+            min: 1350,
+            max: 1550,
+            grid: { drawOnChartArea: false }
+          }
+        };
+      }
+
+      if (syncChart) {
+        syncChart.data.datasets = datasets;
+        syncChart.options.scales = scales;
+        syncChart.update();
+      } else {
+        syncChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: rawLabels, datasets: datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: scales
+          }
+        });
+      }
+    }
+
+    function setChartMode(mode) {
+      chartMode = mode;
+      document.getElementById('btn-mode-indexed').className = mode === 'indexed' 
+        ? 'px-3 py-1 rounded bg-white text-slate-900 shadow-xs transition' 
+        : 'px-3 py-1 rounded text-slate-500 hover:text-slate-900 transition';
+      document.getElementById('btn-mode-absolute').className = mode === 'absolute' 
+        ? 'px-3 py-1 rounded bg-white text-slate-900 shadow-xs transition' 
+        : 'px-3 py-1 rounded text-slate-500 hover:text-slate-900 transition';
+      
+      const desc = document.getElementById('chart-desc');
+      if (mode === 'indexed') {
+        desc.innerText = `선행 거시 변동폭 vs 자사 구매원가 동기화 정규화 분석 (현재 Lag ${currentChartLag}주 적용)`;
+      } else {
+        desc.innerText = '원유($/bbl) 및 자사 PP 실구매단가(천원/Ton) 절대단가 직접 비교';
+      }
+      renderSyncChart();
+    }
+
+    function onChartLagChange(val) {
+      currentChartLag = parseInt(val);
+      renderSyncChart();
+    }
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSyncChart();
+    });
+  </script>
+</body>
+</html>

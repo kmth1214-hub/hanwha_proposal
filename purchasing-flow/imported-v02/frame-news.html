@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한화첨단소재 글로벌 원자재 뉴스 분석 (UA-13)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif; }
+    
+    /* 모달 스크롤바 커스텀 */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+<style>body > aside { display: none !important; } body > main { width: 100%; }</style></head>
+<body class="bg-[#f8f9fa] text-slate-800 min-h-screen flex antialiased">
+
+  <!-- ======================================================== -->
+  <!-- 1. 좌측 LNB 사이드바 (글로벌 뉴스 분석 단일 메뉴 중심) -->
+  <!-- ======================================================== -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 min-h-screen sticky top-0 h-screen z-40">
+    <div>
+      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-100">
+        <div>
+          <span class="text-base font-black text-[#eb6100] tracking-tight block">한화첨단소재</span>
+          <span class="text-[11px] text-slate-400 font-medium block">AI 구매 의사결정 Agent</span>
+        </div>
+        <button class="w-8 h-8 rounded-lg bg-[#fff5ed] text-[#eb6100] border border-[#fcdbc7] flex items-center justify-center">
+          <i class="fa-solid fa-bars text-xs"></i>
+        </button>
+      </div>
+
+      <div class="px-3 py-4">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">MENU</span>
+        <nav class="space-y-1.5">
+          <!-- 활성화 메뉴: 글로벌 뉴스 분석 (UA-13) -->
+          <a href="#" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-bold bg-[#fbeee6] text-[#eb6100] transition">
+            <div class="flex items-center">
+              <i class="fa-solid fa-newspaper w-5 text-base mr-2.5 text-[#eb6100]"></i>
+              <span>글로벌 뉴스 분석 (UA-13)</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#eb6100] text-white font-bold">FEED</span>
+          </a>
+
+          <!-- 비활성 보조 메뉴들 -->
+          <div class="pt-2 border-t border-slate-100 space-y-1 opacity-50 cursor-not-allowed">
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-table-cells-large w-5 text-sm mr-2.5"></i>
+              <span>전체 대시보드 (UA-09)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-gauge-high w-5 text-sm mr-2.5"></i>
+              <span>Market Health (UA-10)</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-arrow-trend-up w-5 text-sm mr-2.5"></i>
+              <span>구매원가·의사결정</span>
+            </div>
+            <div class="flex items-center px-3.5 py-2 text-xs font-medium text-slate-400">
+              <i class="fa-solid fa-gear w-5 text-sm mr-2.5"></i>
+              <span>산식·기준 관리 (UA-16)</span>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- 사용자 프로필 -->
+    <div class="p-4 border-t border-slate-100 flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-full bg-[#eb6100] text-white font-bold flex items-center justify-center text-xs shadow-sm">
+        김H
+      </div>
+      <div>
+        <div class="text-xs font-bold text-slate-800">김태화</div>
+        <div class="text-[11px] text-slate-400">구매SCM팀 &bull; DX</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- 2. 메인 컨텐츠 영역 (글로벌 뉴스 트래커) -->
+  <!-- ======================================================== -->
+  <main class="flex-1 min-w-0 p-8 space-y-6 overflow-y-auto">
+
+    <!-- [상단 헤더] Title & 파이프라인 통계 -->
+    <header class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded bg-[#fff5ed] text-[#eb6100] border border-[#fcdbc7] font-black text-xs">UA-13 NEWS TRACKER</span>
+          <span class="text-xs text-slate-400">2-Stage 하이브리드 파이프라인 (키워드 룰 ➔ LLM 검증)</span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2 mt-1">
+          <i class="fa-solid fa-chart-line text-[#eb6100]"></i>
+          글로벌 원자재 공급망 이슈 트래커
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          한화첨단소재 핵심 원재료(PP, EVA, M10) 관련 글로벌 공급망 이슈 및 시장 리포트를 실시간 분석합니다.
+        </p>
+      </div>
+
+      <!-- 2-Stage 파이프라인 수집 상태 뱃지 -->
+      <div class="flex items-center space-x-2 text-xs">
+        <span class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-600 font-mono font-medium shadow-xs">
+          1차 크롤링: <strong class="text-slate-900">1,240건</strong>
+        </span>
+        <span class="text-slate-400 font-bold">➔</span>
+        <span class="px-3 py-1.5 bg-[#fff5ed] text-[#eb6100] border border-[#fcdbc7] rounded-lg font-mono font-bold shadow-xs">
+          2차 LLM 타겟팅: <strong>28건 선별</strong>
+        </span>
+      </div>
+    </header>
+
+    <!-- [필터 카드 섹션] 품목 필터 & 이슈 유형 필터 다중 선택 칩 -->
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-4">
+      
+      <!-- 품목 필터 (PP 수지, EVA Resin, M10 N214002) -->
+      <div class="flex flex-col md:flex-row md:items-center gap-4">
+        <div class="flex items-center gap-2 min-w-[90px]">
+          <i class="fa-solid fa-filter text-slate-400 text-sm"></i>
+          <span class="text-sm font-semibold text-slate-700">품목 필터</span>
+        </div>
+        <div class="flex flex-wrap gap-2" id="item-filter-chips">
+          <!-- Dynamic Chips via JS -->
+        </div>
+      </div>
+      
+      <div class="h-px w-full bg-slate-100"></div>
+
+      <!-- 이슈 유형 필터 (공장중단, 감산, 공급과잉) -->
+      <div class="flex flex-col md:flex-row md:items-center gap-4">
+        <div class="flex items-center gap-2 min-w-[90px]">
+          <i class="fa-solid fa-bolt text-slate-400 text-sm"></i>
+          <span class="text-sm font-semibold text-slate-700">이슈 유형</span>
+        </div>
+        <div class="flex flex-wrap gap-2" id="issue-filter-chips">
+          <!-- Dynamic Chips via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- [타임라인 리스트 테이블] -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-bold text-slate-600">이슈 타임라인 목록</span>
+          <span id="news-count" class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-black">총 5건</span>
+        </div>
+        <span class="text-[11px] text-slate-400">행을 클릭하면 요약 및 전체 번역본 모달이 표시됩니다.</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[700px]">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <th class="py-3.5 px-6 w-3/5">뉴스 제목 및 대상 품목 (마우스 오버 시 관계 확인)</th>
+              <th class="py-3.5 px-6 w-1/5">이슈 유형</th>
+              <th class="py-3.5 px-6 w-1/5">출처 및 게시일</th>
+            </tr>
+          </thead>
+          <tbody id="news-table-body" class="divide-y divide-slate-100">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- [상세 모달 팝업] 요약본 & 전체 번역본 & 품목 분석 포인트 -->
+    <div id="news-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 sm:p-6">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick="closeNewsModal()"></div>
+      
+      <!-- Modal Content -->
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Modal Header -->
+        <div class="flex items-start justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+          <div class="pr-8">
+            <div class="flex items-center gap-2 mb-3">
+              <span id="modal-item-badge" class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border">
+                품목명
+              </span>
+              <span id="modal-issue-badge" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-200 text-slate-700">
+                이슈유형
+              </span>
+              <span id="modal-date" class="text-xs text-slate-500 flex items-center before:content-['•'] before:mx-2">
+                2026-09-21
+              </span>
+            </div>
+            <h2 id="modal-title" class="text-xl font-bold text-slate-900 leading-snug">
+              뉴스 제목 들어가는 곳
+            </h2>
+            <div class="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
+              <i class="fa-regular fa-newspaper text-xs"></i>
+              <span>출처: <strong id="modal-source" class="text-slate-700">로이터통신</strong></span>
+            </div>
+          </div>
+          <button onclick="closeNewsModal()" class="p-2 -mr-2 -mt-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body (Scrollable) -->
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+          
+          <!-- 품목 분석 포인트 (Relationship) -->
+          <div class="bg-orange-50 border border-orange-200/80 rounded-xl p-4 flex gap-3">
+            <i class="fa-solid fa-circle-info text-[#eb6100] shrink-0 mt-0.5 text-base"></i>
+            <div>
+              <h3 class="text-sm font-bold text-orange-950 mb-1">품목 분석 포인트 (SCM 영향)</h3>
+              <p id="modal-relationship" class="text-sm text-orange-900 leading-relaxed">
+                관계 설명문이 출력됩니다.
+              </p>
+            </div>
+          </div>
+
+          <!-- 요약본 (Summary) -->
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-2.5 flex items-center gap-2">
+              <span class="w-1.5 h-4 bg-[#eb6100] rounded-full"></span>
+              요약본
+            </h3>
+            <p id="modal-summary" class="text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl text-sm border border-slate-100">
+              요약본 내용이 출력됩니다.
+            </p>
+          </div>
+
+          <hr class="border-slate-100">
+
+          <!-- 전체 번역본 (Full Translation) -->
+          <div>
+            <h3 class="text-base font-bold text-slate-900 mb-2.5 flex items-center gap-2">
+              <span class="w-1.5 h-4 bg-slate-400 rounded-full"></span>
+              전체 번역본
+            </h3>
+            <div id="modal-full-translation" class="text-slate-600 leading-loose text-sm whitespace-pre-line bg-white p-2 rounded">
+              전체 번역본 본문 내용이 출력됩니다.
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
+          <button onclick="closeNewsModal()" class="px-5 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- 3. JavaScript Logic (뉴스 데이터 & 상호작용 100%) -->
+  <!-- ======================================================== -->
+  <script>
+    // 한화첨단소재 핵심 원재료(PP, EVA, M10) 뉴스 데이터
+    const NEWS_DATA = [
+      {
+        id: 1,
+        title: '동북아 C3 프로필렌 신규 PDH 60만 톤 설비 가동 개시… 역내 현물가 하향세',
+        source: 'ICIS Chemical',
+        date: '2026-09-21',
+        item: 'PP 수지',
+        issueType: '공급과잉',
+        relationship: '당사 자동차 복합소재 PP Resin 조달 단가에 직접 연동되는 프로필렌 공급 급증으로 10월 공급사 단가 인하 협상 카드 활용 가능.',
+        summary: '중국 산둥성 신규 PDH 설비의 정상 가동으로 아시아 역내 프로필렌 현물 공급이 대폭 확대되며 단가 하향 안정세를 주도하고 있습니다.',
+        fullTranslation: '[본문 번역]\n화요일 아침 산둥성의 대형 화학단지에서 연산 60만 톤 규모의 신규 프로판 탈수소화(PDH) 플랜트가 상업 운전을 시작했습니다. 이번 가동으로 동북아 C3 프로필렌 모노머 현물 공급이 단기적으로 급증하면서 FOB Korea 기준 스팟 가격이 톤당 $850선까지 하락 압력을 받고 있습니다. 시장 전문가들은 이 같은 공급 과잉 기조가 4분기 초까지 이어질 것으로 분석하며, 폴리프로필렌(PP) 수지를 조달하는 전방 부품사들의 원가 부담이 경감될 것으로 전망했습니다.'
+      },
+      {
+        id: 2,
+        title: '북미 오웬스코닝 용융로 화재로 긴급 가동중단 사태… 유리섬유 매트 수급 병목',
+        source: 'Platts Alert',
+        date: '2026-09-20',
+        item: 'M10 N214002',
+        issueType: '공장중단',
+        relationship: 'SuperLite 핵심 보강재인 유리섬유 매트 수입선 공급 차질 발생으로 가용 예산 내 2개월분 안전재고 조기 선구매(IMMEDIATE_BUY) 권고.',
+        summary: '북미 대표 유리섬유 제조시설 화재로 복구까지 최소 6주 소요 전망. 글로벌 유리섬유 수급 병목으로 단기 프리미엄 급등 조짐.',
+        fullTranslation: '[본문 번역]\n오웬스코닝의 주요 유리섬유 용융로 설비에서 주말 사이 화재가 발생하여 해당 생산 라인의 조업이 전면 중단되었습니다. 인명 피해는 없었으나 내화벽돌 교체 및 전기 제어설비 복구까지 최소 6주 이상 소요될 예정입니다. 이에 따라 글로벌 자동차 내장 경량복합재 공급망에 공급되는 고강도 유리섬유 매트의 리드타임이 2주 이상 지연될 것으로 보여 완성차 티어1 업체들의 긴급 재고 확보 움직임이 본격화되고 있습니다.'
+      },
+      {
+        id: 3,
+        title: '아시아 주요 에틸렌 NCC 추계 정기보수 돌입, EVA 수지 원가 상승 압력 가중',
+        source: '블룸버그 에너지',
+        date: '2026-09-19',
+        item: 'EVA Resin',
+        issueType: '감산',
+        relationship: '태양광 봉지재 주원료인 에틸렌 모노머 가동률 저하로 4분기 EVA 수지 매입 단가 인상 압박 발생. 분할 매수 모니터링 필요.',
+        summary: '국내외 석유화학 NCC 설비의 추계 정기보수가 집중되면서 에틸렌 공급이 타이트해져 EVA 수지 현물가가 주간 1.95% 상승했습니다.',
+        fullTranslation: '[본문 번역]\n동북아 지역 나프타 분해설비(NCC)들이 9월 중순을 기점으로 대규모 추계 정기보수에 착수함에 따라 기초유분 에틸렌 공급량이 전월 대비 12% 감소했습니다. 이에 따라 태양광 모듈 캡슐화 필름(Encapsulant)에 쓰이는 고순도 EVA 수지 생산업체들이 원가 상승분을 반영하여 톤당 오퍼 가격을 $25 인상했습니다. 전문가들은 10월 중순까지 공급 부족 현상이 이어질 것으로 관측했습니다.'
+      },
+      {
+        id: 4,
+        title: '글로벌 태양광 모듈사 가동률 조정으로 EVA 레진 공급 여유 일시 확대',
+        source: '파이낸셜타임스',
+        date: '2026-09-18',
+        item: 'EVA Resin',
+        issueType: '공급과잉',
+        relationship: '다운스트림 모듈 수요 일시 둔화에 따른 스팟 물량 출회로 추가 단가 인하 협상 및 분할 매수 기회 발생.',
+        summary: '주요 태양광 모듈 제조사들의 재고 조정으로 역내 EVA 레진 단기 공급 물량이 시장에 출회되며 가격 상승세가 일시 제한되었습니다.',
+        fullTranslation: '[본문 번역]\n유럽 및 북미 지역의 태양광 발전소 설치 속도 조절로 인해 모듈 메이커들의 봉지재 재고 축적 수요가 둔화되었습니다. 이에 따라 주요 수지 공급사들이 보유한 재고 물량이 유통 시장으로 일부 유입되면서 최근 지속되던 EVA 수지 가격 급등세가 보합권으로 진정되는 양상을 보이고 있습니다.'
+      },
+      {
+        id: 5,
+        title: '중국 내륙 무기질 복합소재 제련 라인 전력 배급제로 가동률 15% 하향',
+        source: '월스트리트저널',
+        date: '2026-09-17',
+        item: 'M10 N214002',
+        issueType: '감산',
+        relationship: '차량 경량화 언더바디 보강재용 수입 규사/유리복합 소재 조달 리드타임 증가 리스크 사전 대비 필요.',
+        summary: '중국 지방정부의 친환경 전력 제한 조치로 주요 복합소재 제련 라인이 감산에 돌입하여 단기 통관 지연 우려가 커졌습니다.',
+        fullTranslation: '[본문 번역]\n전력 피크 시간대 사용 제한에 따라 현지 무기소재 제련소들의 일일 가동률이 15% 이상 하향 조정되었습니다. 이번 조치로 인해 차량 경량화 소재에 배합되는 보강 규사 및 무기 바인더 원료의 선적 일정이 평소보다 1~2주 지연될 것으로 예상됩니다.'
+      }
+    ];
+
+    const ITEM_COLORS = {
+      'PP 수지': 'bg-blue-100 text-blue-800 border-blue-200',
+      'EVA Resin': 'bg-rose-100 text-rose-800 border-rose-200',
+      'M10 N214002': 'bg-purple-100 text-purple-800 border-purple-200'
+    };
+
+    const ISSUE_ICONS = {
+      '공장중단': '<i class="fa-solid fa-industry text-[11px] mr-1.5 text-rose-600"></i>',
+      '감산': '<i class="fa-solid fa-arrow-trend-down text-[11px] mr-1.5 text-amber-600"></i>',
+      '공급과잉': '<i class="fa-solid fa-arrow-down-wide-short text-[11px] mr-1.5 text-blue-600"></i>'
+    };
+
+    const ITEMS_LIST = ['PP 수지', 'EVA Resin', 'M10 N214002'];
+    const ISSUES_LIST = ['공장중단', '감산', '공급과잉'];
+
+    let selectedItems = [];
+    let selectedIssues = [];
+
+    // 필터 칩 렌더링
+    function renderFilterChips() {
+      // 품목 칩
+      const itemContainer = document.getElementById('item-filter-chips');
+      itemContainer.innerHTML = '';
+      ITEMS_LIST.forEach(item => {
+        const isSelected = selectedItems.includes(item);
+        const btn = document.createElement('button');
+        btn.onclick = () => toggleFilterItem(item);
+        btn.className = `px-3.5 py-1 rounded-full text-xs font-semibold transition border ${
+          isSelected 
+            ? 'bg-[#eb6100] text-white border-[#eb6100] shadow-xs' 
+            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+        }`;
+        btn.innerText = item;
+        itemContainer.appendChild(btn);
+      });
+
+      // 이슈 칩
+      const issueContainer = document.getElementById('issue-filter-chips');
+      issueContainer.innerHTML = '';
+      ISSUES_LIST.forEach(issue => {
+        const isSelected = selectedIssues.includes(issue);
+        const btn = document.createElement('button');
+        btn.onclick = () => toggleFilterIssue(issue);
+        btn.className = `px-3.5 py-1 rounded-full text-xs font-semibold transition border ${
+          isSelected 
+            ? 'bg-slate-900 text-white border-slate-900 shadow-xs' 
+            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+        }`;
+        btn.innerText = issue;
+        issueContainer.appendChild(btn);
+      });
+    }
+
+    function toggleFilterItem(val) {
+      if (selectedItems.includes(val)) {
+        selectedItems = selectedItems.filter(i => i !== val);
+      } else {
+        selectedItems.push(val);
+      }
+      renderFilterChips();
+      renderNewsTable();
+    }
+
+    function toggleFilterIssue(val) {
+      if (selectedIssues.includes(val)) {
+        selectedIssues = selectedIssues.filter(i => i !== val);
+      } else {
+        selectedIssues.push(val);
+      }
+      renderFilterChips();
+      renderNewsTable();
+    }
+
+    // 뉴스 테이블 렌더링
+    function renderNewsTable() {
+      const tbody = document.getElementById('news-table-body');
+      tbody.innerHTML = '';
+
+      const filtered = NEWS_DATA.filter(news => {
+        const itemMatch = selectedItems.length === 0 || selectedItems.includes(news.item);
+        const issueMatch = selectedIssues.length === 0 || selectedIssues.includes(news.issueType);
+        return itemMatch && issueMatch;
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      document.getElementById('news-count').innerText = `총 ${filtered.length}건`;
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" class="py-14 text-center text-slate-500">
+              <i class="fa-solid fa-magnifying-glass text-2xl text-slate-300 mb-2 block"></i>
+              <span class="text-sm font-medium">선택된 조건에 일치하는 뉴스가 없습니다.</span>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.forEach(news => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-orange-50/40 transition-colors cursor-pointer group';
+        tr.onclick = (e) => {
+          if (e.target.closest('.tooltip-trigger')) return;
+          openNewsModal(news.id);
+        };
+
+        const itemColorClass = ITEM_COLORS[news.item] || 'bg-gray-100 text-gray-800 border-gray-200';
+        const issueIcon = ISSUE_ICONS[news.issueType] || '';
+
+        tr.innerHTML = `
+          <td class="py-4 px-6">
+            <div class="flex items-center gap-3">
+              <!-- Tooltip Badge (마우스 오버 시 관계 설명) -->
+              <div class="relative group/tip flex items-center shrink-0 tooltip-trigger">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border cursor-help transition-transform hover:scale-105 ${itemColorClass}">
+                  ${news.item}
+                  <i class="fa-solid fa-circle-info text-[10px] ml-1 opacity-70"></i>
+                </span>
+                
+                <!-- Tooltip Popup -->
+                <div class="absolute left-1/2 bottom-full mb-2 -translate-x-1/2 hidden group-hover/tip:block w-72 z-50 pointer-events-none">
+                  <div class="bg-gray-900 text-white text-xs rounded-lg shadow-xl p-3 relative">
+                    <p class="font-bold text-[#eb6100] mb-1">품목과의 관계</p>
+                    <p class="leading-snug text-slate-200">${news.relationship}</p>
+                    <div class="absolute left-1/2 -bottom-1 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Title -->
+              <span class="font-medium text-slate-900 group-hover:text-[#eb6100] transition-colors line-clamp-1 text-sm">
+                ${news.title}
+              </span>
+            </div>
+          </td>
+
+          <!-- Issue Type -->
+          <td class="py-4 px-6">
+            <span class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium bg-slate-100 text-slate-700">
+              ${issueIcon}
+              <span>${news.issueType}</span>
+            </span>
+          </td>
+
+          <!-- Source & Date -->
+          <td class="py-4 px-6">
+            <div class="flex flex-col">
+              <span class="text-sm font-medium text-slate-700">${news.source}</span>
+              <span class="text-xs text-slate-400 mt-0.5">${news.date}</span>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // 모달 제어 함수
+    function openNewsModal(newsId) {
+      const news = NEWS_DATA.find(n => n.id === newsId);
+      if (!news) return;
+
+      const itemBadge = document.getElementById('modal-item-badge');
+      itemBadge.innerText = news.item;
+      itemBadge.className = `inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold border ${ITEM_COLORS[news.item] || 'bg-gray-100 text-gray-800'}`;
+
+      document.getElementById('modal-issue-badge').innerText = news.issueType;
+      document.getElementById('modal-date').innerText = news.date;
+      document.getElementById('modal-title').innerText = news.title;
+      document.getElementById('modal-source').innerText = news.source;
+      document.getElementById('modal-relationship').innerText = news.relationship;
+      document.getElementById('modal-summary').innerText = news.summary;
+      document.getElementById('modal-full-translation').innerText = news.fullTranslation;
+
+      const modal = document.getElementById('news-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeNewsModal() {
+      const modal = document.getElementById('news-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeNewsModal();
+    });
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      renderFilterChips();
+      renderNewsTable();
+    });
+  </script>
+</body>
+</html>

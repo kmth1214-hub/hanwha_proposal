@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>구매원가·의사결정 - 한화첨단소재 AI 구매 Agent</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Noto Sans KR", sans-serif; }
+    .sub-tab-view { display: none; }
+    .sub-tab-view.active { display: block; }
+    
+    .history-row.selected {
+      background-color: #fff7ed !important;
+      border-left: 4px solid #eb6100;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+<style>body > aside { display: none !important; } body > main { width: 100%; }</style></head>
+<body class="bg-[#f8f9fa] text-slate-800 min-h-screen flex antialiased">
+
+  <!-- ======================================================== -->
+  <!-- 1. 좌측 LNB 사이드바 (구매원가·의사결정 단독 고정) -->
+  <!-- ======================================================== -->
+  <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 min-h-screen sticky top-0 h-screen z-40">
+    <div>
+      <div class="h-16 px-5 flex items-center justify-between border-b border-slate-100">
+        <div>
+          <span class="text-base font-black text-[#eb6100] tracking-tight block">한화첨단소재</span>
+          <span class="text-[11px] text-slate-400 font-medium block">AI 구매 의사결정 Agent</span>
+        </div>
+        <button class="w-8 h-8 rounded-lg bg-[#fff5ed] text-[#eb6100] border border-[#fcdbc7] flex items-center justify-center">
+          <i class="fa-solid fa-bars text-xs"></i>
+        </button>
+      </div>
+
+      <div class="px-3 py-4">
+        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 block">MENU</span>
+        <nav class="space-y-1.5">
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold text-slate-400 cursor-not-allowed">
+            <div class="flex items-center">
+              <i class="fa-solid fa-table-cells-large w-5 text-base mr-2.5 text-slate-300"></i>
+              <span>전체 대시보드 (UA-09)</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400">FACT</span>
+          </div>
+
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold text-slate-400 cursor-not-allowed">
+            <div class="flex items-center">
+              <i class="fa-solid fa-gauge-high w-5 text-base mr-2.5 text-slate-300"></i>
+              <span>Market Health (UA-10)</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400">4대 지표</span>
+          </div>
+
+          <!-- 구매원가·의사결정 (상시 활성화) -->
+          <button class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-bold bg-[#fbeee6] text-[#eb6100] transition">
+            <div class="flex items-center">
+              <i class="fa-solid fa-arrow-trend-up w-5 text-base mr-2.5 text-[#eb6100]"></i>
+              <span>구매원가·의사결정</span>
+            </div>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-[#eb6100] text-white font-bold">ACTIVE</span>
+          </button>
+
+          <div class="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-semibold text-slate-400 cursor-not-allowed">
+            <div class="flex items-center">
+              <i class="fa-solid fa-newspaper w-5 text-base mr-2.5 text-slate-300"></i>
+              <span>글로벌 뉴스 분석 (UA-13)</span>
+            </div>
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400">FEED</span>
+          </div>
+
+          <div class="flex items-center px-3.5 py-2.5 rounded-lg text-xs font-semibold text-slate-400 cursor-not-allowed">
+            <i class="fa-solid fa-gear w-5 text-slate-300 text-base mr-2.5"></i>
+            <span>산식·기준 관리 (UA-16)</span>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <!-- 프로필 영역 -->
+    <div class="p-4 border-t border-slate-100 flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-full bg-[#eb6100] text-white font-bold flex items-center justify-center text-xs shadow-sm">
+        김H
+      </div>
+      <div>
+        <div class="text-xs font-bold text-slate-800">김태화</div>
+        <div class="text-[11px] text-slate-400">구매SCM팀 &bull; DX</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ======================================================== -->
+  <!-- 2. 메인 컨텐츠 영역 (구매원가·의사결정 단독 뷰) -->
+  <!-- ======================================================== -->
+  <main class="flex-1 min-w-0 p-8 space-y-6 overflow-y-auto">
+    
+    <!-- 최상단 헤더 -->
+    <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="px-2.5 py-0.5 rounded bg-orange-100 text-[#eb6100] font-black text-xs">DEEP ANALYSIS</span>
+          <span class="text-xs text-slate-400">개별 품목 심층 분석 및 시차/현물가 스프레드 검증</span>
+        </div>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight mt-1">원재료 구매원가 · 마진 스프레드 · 산식 분석</h1>
+        <p class="text-xs text-slate-500 mt-1">현물가(Spot) 및 계약 시차(Lag) 이중축 비교와 기초원료 BOM 목표원가 산출을 진행합니다. </p>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 shadow-sm">
+          <i class="fa-solid fa-database text-emerald-500 mr-1.5"></i>ERP 실적 100% 동기화 
+        </span>
+      </div>
+    </div>
+
+    <!-- 서브 탭 바 (UA-11, UA-12) -->
+    <div class="border-b border-slate-200">
+      <nav class="flex space-x-6">
+        <button onclick="switchSubTab('spread-11')" id="subtab-btn-spread-11" class="subtab-btn pb-2.5 text-xs font-extrabold border-b-2 border-slate-900 text-slate-900">
+          구매원가 · 마진 스프레드 (UA-11)
+        </button>
+        <button onclick="switchSubTab('target-cost-12')" id="subtab-btn-target-cost-12" class="subtab-btn pb-2.5 text-xs font-semibold text-slate-500 hover:text-slate-800 border-b-2 border-transparent">
+          기초원료(BOM) 목표원가 산출 및 이력 (UA-12)
+        </button>
+      </nav>
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- SUBTAB 1: UA-11 마진 스프레드 & 팩트 꺾은선 차트 (스케치 반영) -->
+    <!-- ============================================================= -->
+    <div id="subtab-view-spread-11" class="sub-tab-view active space-y-5">
+      
+      <!-- 상단 필터 및 시차/현물가 컨트롤 바 -->
+      <div class="bg-white px-5 py-4 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <span class="px-2.5 py-1 rounded bg-orange-100 text-[#eb6100] text-[11px] font-black">UA-11 CONTROLS</span>
+            <label for="spread-material" class="text-xs font-bold text-slate-700">원재료 종목:</label>
+            <select id="spread-material" onchange="updateSpreadMaterial()" class="min-w-[245px] px-3 py-2 rounded-lg border border-slate-300 bg-slate-50 text-xs font-bold text-slate-900 outline-none focus:ring-2 focus:ring-orange-200">
+              <option value="pp" selected>PP Resin (폴리프로필렌 사출급) - C3</option>
+              <option value="eva">EVA Resin (에틸렌비닐아세테이트)</option>
+              <option value="m10">M10 N214002</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-4 text-[11px] font-semibold text-slate-500">
+            <span><i class="fa-solid fa-circle text-emerald-500 text-[8px] mr-1.5"></i>좌측축: 국제가격/현물가 ($/Ton)</span>
+            <span>우측축: 실구매단가/환율 (₩/Ton, ₩/$)</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 pt-4">
+          <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between">
+            <div>
+              <div class="text-xs font-black text-slate-800"><i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i>현물가 (Spot) 곡선 오버레이</div>
+              <div class="text-[11px] text-slate-400 mt-1">장기 계약가 vs 스팟 시세 갭 비교</div>
+            </div>
+            <button id="spot-toggle" onclick="toggleSpotLine()" aria-pressed="true" class="relative w-11 h-6 rounded-full bg-amber-500 transition-colors shrink-0">
+              <span class="absolute right-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all"></span>
+            </button>
+          </div>
+
+          <div class="lg:col-span-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div class="text-xs font-black text-slate-800"><i class="fa-solid fa-clock-rotate-left text-orange-500 mr-1.5"></i>계약 시차 (Time-Lag) 이중축 정렬 보정</div>
+              <div id="lag-description" class="text-[11px] text-slate-400 mt-1">현재 42일(M-1 연동) 시차가 적용되어 실구매가와 정합 정렬됨 </div>
+            </div>
+            <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-1 flex" id="lag-controls">
+              <button onclick="setSpreadLag(0)" data-lag="0" class="lag-btn px-3 py-1.5 rounded-md text-[11px] font-bold text-slate-500">시차 없음 (0일)</button>
+              <button onclick="setSpreadLag(30)" data-lag="30" class="lag-btn px-3 py-1.5 rounded-md text-[11px] font-bold text-slate-500">30일 (M-1)</button>
+              <button onclick="setSpreadLag(42)" data-lag="42" class="lag-btn px-3 py-1.5 rounded-md text-[11px] font-black bg-[#eb6100] text-white shadow-sm">42일 (권고)</button>
+              <button onclick="setSpreadLag(60)" data-lag="60" class="lag-btn px-3 py-1.5 rounded-md text-[11px] font-bold text-slate-500">60일 (M-2)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2분할 메인 그리드 (좌측: 차트 2개 상하 적층 / 우측: 비교표 및 FACT 인사이트) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+        
+        <!-- 좌측 7열: 스케치(29969.jpg) -> [상단: 가공 스프레드 차트] + [하단: 순수 팩트 꺾은선 차트][cite: 10] -->
+        <div class="xl:col-span-7 space-y-5">
+          
+          <!-- [상단 차트] 스케치 '가상/분석': 시차 보정 마진 스프레드 추이 차트[cite: 10] -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded bg-orange-100 text-[#eb6100] text-[10px] font-black">ANALYSIS</span>
+                  <h3 class="text-sm font-black text-slate-900">시차보정 조달가격 스프레드 추이 (가공 분석)</h3>
+                </div>
+                <p id="spread-chart-subtitle" class="text-[11px] text-slate-400 mt-1">구매량 가중 국제가격 · Spot · 42일 시차보정 기준원가 · SAP 실제단가 비교 </p>
+              </div>
+              <div class="flex items-center gap-2.5 text-[10px] font-bold text-slate-500">
+                <span class="flex items-center"><span class="w-2.5 h-1.5 bg-slate-400 rounded mr-1"></span>계약국제가($)</span>
+                <span class="flex items-center"><span class="w-2.5 h-1.5 bg-amber-500 rounded mr-1"></span>Spot($)</span>
+                <span class="flex items-center"><span class="w-2.5 h-1.5 bg-blue-600 rounded mr-1"></span>시차보정 기준원가(₩)</span>
+                <span class="flex items-center"><span class="w-2.5 h-1.5 bg-[#eb6100] rounded mr-1"></span>SAP 단가(₩)</span>
+              </div>
+            </div>
+            <div class="h-[240px]"><canvas id="spreadChart"></canvas></div>
+          </div>
+
+          <!-- [하단 차트] 스케치 '팩트/원천': 국제가 · 환율 · SAP 실제구매단가 꺾은선 차트[cite: 10] -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-2">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-black">PURE FACT</span>
+                  <h3 class="text-sm font-black text-slate-900">원천 팩트 지표 꺾은선 차트 (국제가 · 환율 · SAP 구매실적)</h3>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">시차나 산식 보정이 가해지지 않은 ERP 확정 구매단가, 한국은행 고시환율, 시장 공시 국제가격 원본[cite: 2, 8]</p>
+              </div>
+              <div class="flex items-center gap-2.5 text-[10px] font-bold text-slate-500">
+                <span class="flex items-center"><span class="w-2.5 h-1.5 bg-[#eb6100] rounded mr-1"></span>SAP 실구매가(₩)</span>
+                <span class="flex items-center"><span class="w-2.5 h-1.5 bg-emerald-600 rounded mr-1"></span>기준환율(₩/$)</span>
+                <span class="flex items-center"><span class="w-2.5 h-1.5 bg-slate-500 rounded mr-1"></span>국제가격($)</span>
+              </div>
+            </div>
+            <div class="h-[240px]"><canvas id="pureFactLineChart"></canvas></div>
+            <div class="mt-2.5 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 pt-2">
+              <span>* 순수 전표 및 환율 API 팩트 데이터로, 상단 시차 보정 전 원래의 도입 시점 단가를 확인하는 용도입니다. </span>
+              <span class="font-bold text-slate-600">동기화: 당월 확정 전표 100% 반영 </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 우측 5열: 비교 분석 표 및 FACT 요약 인사이트 카드 -->
+        <div class="xl:col-span-5 space-y-5">
+          
+          <!-- 비교 · 분석 표 -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <h3 class="text-base font-black text-slate-900">비교 · 분석 표 </h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">확정 구매량 기준 가중평균 Fact &amp; Spread </p>
+              </div>
+              <span id="lag-badge" class="px-2.5 py-1 rounded border border-orange-200 bg-orange-50 text-[#eb6100] text-[10px] font-black">시차: 42일 보정</span>
+            </div>
+            <div class="overflow-x-auto flex-1">
+              <table class="w-full text-[11px] text-left">
+                <thead class="bg-slate-100 text-slate-600 font-bold">
+                  <tr><th class="px-2.5 py-2.5">월</th><th class="px-2.5 py-2.5 text-right">구매량</th><th class="px-2.5 py-2.5 text-right">가중 국제가</th><th class="px-2.5 py-2.5 text-right">가중 환율</th><th class="px-2.5 py-2.5 text-right">SAP 실구매가</th><th class="px-2.5 py-2.5 text-right">조달 스프레드</th></tr>
+                </thead>
+                <tbody id="spread-table-body" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+            <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[11px] space-y-2">
+              <div class="flex justify-between items-center"><span class="text-slate-600">당월 시차보정 조달가격 스프레드:</span><strong id="current-spread" class="text-[#eb6100] text-sm">-3.54% (절감)</strong></div>
+              <div class="border-t border-slate-200 pt-2 flex justify-between items-center"><span class="text-slate-500">마진 임계값 기준 (±3.0%):</span><strong class="text-emerald-600 font-bold">정상 구간 (Pass)</strong></div>
+            </div>
+          </div>
+
+          <!-- FACT 요약 & 조달 인사이트 카드 -->
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="text-base font-black text-slate-900">FACT 요약 &amp; 조달 인사이트</h3>
+                <p class="text-[11px] text-slate-400 mt-0.5">선택 품목 당월 SAP 확정 전표 기준 실적 </p>
+              </div>
+              <i class="fa-solid fa-database text-slate-300 text-lg"></i>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5 text-xs">
+              <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-[10px] text-slate-400">실제 구매량</div><div id="fact-quantity" class="text-base font-black text-slate-900 mt-0.5">10,500 Ton</div></div>
+              <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-[10px] text-slate-400">실제 집행액</div><div id="fact-amount" class="text-base font-black text-slate-900 mt-0.5">148.3 억원</div></div>
+              <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-[10px] text-slate-400">수량 가중평균 단가</div><div id="fact-unit-price" class="text-xs font-black text-slate-900 mt-0.5">₩1,413,100/Ton</div></div>
+              <div class="rounded-lg bg-slate-50 border border-slate-200 p-2.5"><div class="text-[10px] text-slate-400">가중평균 적용환율</div><div id="fact-exchange" class="text-xs font-black text-slate-900 mt-0.5">₩1,385.4/USD</div></div>
+            </div>
+            <div class="mt-3.5 rounded-xl border border-orange-200 bg-orange-50/60 p-3.5">
+              <div class="text-[10px] font-black text-[#eb6100] mb-1"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>AI 시차 분석 요약</div>
+              <p id="fact-insight" class="text-[11px] leading-relaxed text-slate-700">국제가격의 42일 시차 전가 수렴율은 88%입니다.[cite: 2, 8] SAP 실제 가중평균 단가는 시차보정 기준원가보다 3.54% 낮아 적정 조달 수준을 유지하고 있습니다. </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ============================================================= -->
+    <!-- SUBTAB 2: UA-12 기초원료(BOM) 목표원가 산출 및 이력 (화면 1:1) -->
+    <!-- ============================================================= -->
+    <div id="subtab-view-target-cost-12" class="sub-tab-view space-y-6">
+      
+      <!-- Part 1: 계산 시뮬레이터 입력 카드 -->
+      <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
+        <div class="flex flex-wrap justify-between items-center pb-3 border-b border-slate-100 gap-3">
+          <div>
+            <span class="px-2.5 py-0.5 rounded bg-orange-100 text-[#eb6100] font-black text-xs">UA-12 CALCULATOR</span>
+            <h3 class="font-extrabold text-base text-slate-900 mt-1">산식 기반 목표원가 계산 시뮬레이터 </h3>
+            <p class="text-xs text-slate-400 mt-0.5">원료, 배합, 가중치, 산식 및 통화는 직접 설정하며, 국제가격과 환율은 시스템 팩트 값으로 자동 연동됩니다. </p>
+          </div>
+          <span class="px-2.5 py-1 bg-slate-100 text-slate-500 rounded font-semibold text-xs flex items-center">
+            <i class="fa-solid fa-lock mr-1.5 text-slate-400"></i>팩트 금액 (환율·국제가격 잠금) 
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-6">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5 flex items-center">
+              <i class="fa-solid fa-square-root-variable mr-1.5 text-[#eb6100]"></i>
+              관리자 정의 적용 산식 선택 (UA-16 연계) 
+            </label>
+            <select id="calc-formula-select" class="w-full text-xs font-bold border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-slate-800 focus:ring-1 focus:ring-[#eb6100] outline-none" onchange="onFormulaChange(this.value)">
+              <option value="FORMULA_PP_STD" selected>[표준] PP 컴파운딩 표준산식 Ver 2.4 (주원료 + 부원료 + 고정가공비)</option>
+              <option value="FORMULA_PP_SIMPLE">[단순] C3 프로필렌 100% 직연동 산식 Ver 1.1</option>
+              <option value="FORMULA_EVA_SOLAR">[태양광] EVA 필름 듀얼 모노머 산식 Ver 3.0 (에틸렌 + VAM)</option>
+            </select>
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">기준 통화 선택</label>
+            <select id="calc-currency-select" class="w-full text-xs font-bold border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-slate-800 focus:ring-1 focus:ring-[#eb6100] outline-none">
+              <option value="KRW" selected>KRW (원화 기준)</option>
+              <option value="USD">USD (달러 기준)</option>
+            </select>
+          </div>
+          <div class="md:col-span-3">
+            <label class="block text-xs font-bold text-slate-500 mb-1.5 flex items-center justify-between">
+              <span>기준 환율 (한국은행 API)</span>
+              <i class="fa-solid fa-lock text-slate-400 text-[11px]"></i>
+            </label>
+            <input type="text" id="calc-fx-rate" value="1,385.40 KRW/USD" disabled class="w-full text-xs font-black border border-slate-200 rounded-lg px-3 py-2.5 bg-slate-100 text-slate-500 cursor-not-allowed">
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-extrabold text-slate-800">원료 구성 및 배합비 / 가중치 입력 (BOM Specification) </span>
+            <span class="text-[11px] text-slate-400">* 배합 가중치 합계는 100%가 권장됩니다.</span>
+          </div>
+
+          <!-- 구성 원료 1 -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 items-center">
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">구성 원료 1 (직접 입력)</label>
+              <input type="text" id="raw-mat-name-1" value="프로필렌 (Propylene C3)" class="w-full text-xs font-bold border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-900 focus:ring-1 focus:ring-[#eb6100] outline-none">
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">연계 국제가격 지표</label>
+              <select id="raw-mat-index-1" class="w-full text-xs font-medium border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-800 outline-none" onchange="onIndexChange(1, this.value)">
+                <option value="895" selected>Platts FOB Korea Propylene</option>
+                <option value="910">ICIS CFR NE Asia C3</option>
+                <option value="668">CFR Japan Naphtha</option>
+              </select>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">배합 가중치 (%) </label>
+              <div class="relative">
+                <input type="number" id="raw-mat-weight-1" value="78" min="0" max="100" class="w-full text-xs font-black border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-900 focus:ring-1 focus:ring-[#eb6100] outline-none">
+                <span class="absolute right-3 top-1.5 text-xs text-slate-400 font-bold">%</span>
+              </div>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-400 mb-1 flex items-center justify-between">
+                <span>공시 국제가격 (잠금) </span>
+                <i class="fa-solid fa-lock text-slate-400 text-[10px]"></i>
+              </label>
+              <input type="text" id="raw-mat-price-1" value="$ 895.00 / Ton" disabled class="w-full text-xs font-extrabold border border-slate-200 rounded px-2.5 py-1.5 bg-slate-100 text-slate-500 cursor-not-allowed">
+            </div>
+          </div>
+
+          <!-- 구성 원료 2 -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-200 items-center">
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">구성 원료 2 (직접 입력)</label>
+              <input type="text" id="raw-mat-name-2" value="단량체 및 첨가제 (Additives)" class="w-full text-xs font-bold border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-900 focus:ring-1 focus:ring-[#eb6100] outline-none">
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">연계 국제가격 지표</label>
+              <select id="raw-mat-index-2" class="w-full text-xs font-medium border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-800 outline-none" onchange="onIndexChange(2, this.value)">
+                <option value="145" selected>ICIS Monomer Additive Index</option>
+                <option value="160">Global Chemical Spot Index</option>
+              </select>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">배합 가중치 (%) </label>
+              <div class="relative">
+                <input type="number" id="raw-mat-weight-2" value="22" min="0" max="100" class="w-full text-xs font-black border border-slate-300 rounded px-2.5 py-1.5 bg-white text-slate-900 focus:ring-1 focus:ring-[#eb6100] outline-none">
+                <span class="absolute right-3 top-1.5 text-xs text-slate-400 font-bold">%</span>
+              </div>
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-400 mb-1 flex items-center justify-between">
+                <span>공시 국제가격 (잠금) </span>
+                <i class="fa-solid fa-lock text-slate-400 text-[10px]"></i>
+              </label>
+              <input type="text" id="raw-mat-price-2" value="$ 145.00 / Ton" disabled class="w-full text-xs font-extrabold border border-slate-200 rounded px-2.5 py-1.5 bg-slate-100 text-slate-500 cursor-not-allowed">
+            </div>
+          </div>
+
+          <!-- 고정 가공운임 -->
+          <div class="flex justify-between items-center p-3 bg-orange-50/30 rounded-lg border border-orange-100 text-xs">
+            <span class="font-bold text-orange-950"><i class="fa-solid fa-lock text-orange-400 mr-2"></i>산식 반영 고정 가공운임 (표준원가):</span>
+            <span class="font-black text-[#eb6100]">₩ 120,000 / Ton</span>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+          <button onclick="executeTargetCostCalc()" class="px-6 py-2.5 bg-[#eb6100] hover:bg-[#d95300] text-white font-black text-xs rounded-lg shadow-md transition flex items-center">
+            <i class="fa-solid fa-calculator mr-2"></i>목표원가 계산 실행 및 이력 등록
+          </button>
+        </div>
+      </div>
+
+      <!-- Part 2: 계산 결과 및 누적 이력 테이블 & 우측 상세 패널 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col justify-between">
+          <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <h4 class="font-black text-sm text-slate-900">목표원가 계산 결과 및 누적 이력</h4>
+            <span class="text-xs font-bold text-slate-500" id="history-count">총 1건</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+              <thead class="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                <tr><th class="py-2.5 px-3">계산일시</th><th class="py-2.5 px-3">적용 산식</th><th class="py-2.5 px-3">배합 가중치</th><th class="py-2.5 px-3 text-right">산출 목표원가</th><th class="py-2.5 px-3 text-right">SAP 실구매가</th><th class="py-2.5 px-3 text-center">임계값 판정</th></tr>
+              </thead>
+              <tbody id="history-table-body" class="divide-y divide-slate-100 text-slate-700 cursor-pointer"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div class="flex justify-between items-start pb-3 border-b border-slate-100">
+            <div>
+              <h4 class="text-sm font-black text-slate-900" id="detail-formula-name">PP 컴파운딩 표준산식 Ver 2.4</h4>
+              <span class="text-[11px] text-slate-500" id="detail-timestamp">계산 기준일시: 2026-09-21 09:15</span>
+            </div>
+            <span id="detail-badge" class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800">Pass (안정)</span>
+          </div>
+          <div class="p-4 bg-[#fff5ed] rounded-xl border border-[#fcdbc7]">
+            <span class="text-xs font-bold text-[#eb6100] block">최종 산출 목표 단가 (Target Price)</span>
+            <div class="mt-1 flex items-baseline justify-between">
+              <span class="text-3xl font-black text-[#eb6100]" id="detail-target-price">₩ 1,408,500</span>
+              <span class="text-xs font-semibold text-slate-600" id="detail-unit">/ Ton (KRW)</span>
+            </div>
+            <div class="mt-2 pt-2 border-t border-[#fcdbc7]/60 flex justify-between text-xs">
+              <span class="text-slate-600">SAP 실제 단가: <strong id="detail-actual-price">₩ 1,413,100</strong></span>
+              <span class="font-bold text-emerald-700" id="detail-gap-price">+₩ 4,600 (+0.32%)</span>
+            </div>
+          </div>
+          <div class="p-3 bg-slate-900 text-white rounded-lg font-mono text-xs">
+            <span class="text-[#eb6100] font-bold block text-[11px]">[적용 계산식 전개식]</span>
+            <div class="text-slate-300 text-[11px] mt-1" id="detail-formula-str">
+              [ ($895.0 × 0.78) + ($145.0 × 0.22) ] × 1,385.40 + ₩120,000
+            </div>
+          </div>
+          <div class="space-y-2 text-xs">
+            <div class="p-2.5 bg-slate-50 rounded border border-slate-100 flex justify-between items-center">
+              <span id="detail-mat1-name" class="font-semibold text-slate-800">원료 1: 프로필렌 (C3) </span>
+              <span id="detail-mat1-weight" class="font-black text-slate-900">가중치 78%</span>
+            </div>
+            <div class="p-2.5 bg-slate-50 rounded border border-slate-100 flex justify-between items-center">
+              <span id="detail-mat2-name" class="font-semibold text-slate-800">원료 2: 첨가제 (Additives) </span>
+              <span id="detail-mat2-weight" class="font-black text-slate-900">가중치 22%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- 3. JavaScript Interaction Logic -->
+  <!-- ======================================================== -->
+  <script>
+    // 서브탭 전환 로직
+    function switchSubTab(subTabId) {
+      document.querySelectorAll('.sub-tab-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.subtab-btn').forEach(b => {
+        b.classList.remove('border-slate-900', 'text-slate-900', 'font-extrabold');
+        b.classList.add('border-transparent', 'text-slate-500', 'font-semibold');
+      });
+
+      const targetSubView = document.getElementById('subtab-view-' + subTabId);
+      const targetSubBtn = document.getElementById('subtab-btn-' + subTabId);
+
+      if (targetSubView) targetSubView.classList.add('active');
+      if (targetSubBtn) {
+        targetSubBtn.classList.remove('border-transparent', 'text-slate-500', 'font-semibold');
+        targetSubBtn.classList.add('border-slate-900', 'text-slate-900', 'font-extrabold');
+      }
+
+      if (subTabId === 'spread-11') {
+        setTimeout(() => {
+          if (spreadChartInstance) spreadChartInstance.resize();
+          if (pureFactChartInstance) pureFactChartInstance.resize();
+        }, 50);
+      }
+    }
+
+    // =========================================================
+    // UA-11: 상단(가공 스프레드) & 하단(원천 팩트) 듀얼 차트
+    // =========================================================
+    const SPREAD_DATASETS = {
+      pp: {
+        contract: [950, 935, 920, 905, 895], 
+        spot: [910, 895, 880, 875, 890],
+        purchase: [1460000, 1445000, 1430000, 1420000, 1413100], 
+        exchange: [1355, 1365, 1378, 1380, 1385.4],
+        quantity: [9600, 10200, 9900, 10100, 10500], 
+        spread: [-3.20, -3.80, -3.40, -3.60, -3.54]
+      },
+      eva: {
+        contract: [1210, 1195, 1170, 1150, 1160], 
+        spot: [1175, 1160, 1135, 1125, 1140],
+        purchase: [1810000, 1795000, 1765000, 1748000, 1762000], 
+        exchange: [1355, 1365, 1378, 1380, 1385.4],
+        quantity: [3700, 3900, 4050, 4150, 4300], 
+        spread: [-2.70, -2.95, -3.10, -3.35, -3.18]
+      },
+      m10: {
+        contract: [820, 812, 805, 798, 806], 
+        spot: [798, 792, 785, 781, 795],
+        purchase: [1250000, 1242000, 1236000, 1229000, 1241000], 
+        exchange: [1355, 1365, 1378, 1380, 1385.4],
+        quantity: [2100, 2200, 2150, 2300, 2250], 
+        spread: [-2.40, -2.72, -2.91, -3.08, -2.86]
+      }
+    };
+
+    const SPREAD_MONTHS = ['5월', '6월', '7월', '8월', '9월(현재)'];
+    const LAG_SPREAD_ADJUSTMENT = { 0: 2.1, 30: 0.7, 42: 0, 60: -0.5 };
+    let spreadLag = 42;
+    let showSpotLine = true;
+    let spreadChartInstance = null;
+    let pureFactChartInstance = null;
+
+    function formatWon(value) {
+      return '₩ ' + Math.round(value).toLocaleString('ko-KR');
+    }
+
+    function currentSpreadData() {
+      const key = document.getElementById('spread-material')?.value || 'pp';
+      return SPREAD_DATASETS[key];
+    }
+
+    function effectiveSpread(data, index) {
+      return data.spread[index] + (LAG_SPREAD_ADJUSTMENT[spreadLag] || 0);
+    }
+
+    function correctedBaseline(data, index) {
+      return Math.round(data.purchase[index] / (1 + effectiveSpread(data, index) / 100));
+    }
+
+    function renderSpreadTable() {
+      const data = currentSpreadData();
+      const tbody = document.getElementById('spread-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = SPREAD_MONTHS.map((month, i) => `
+        <tr class="${i === 4 ? 'bg-orange-50/60 font-bold' : ''}">
+          <td class="px-2.5 py-2.5 font-bold ${i === 4 ? 'text-[#eb6100]' : 'text-slate-700'}">${month}</td>
+          <td class="px-2.5 py-2.5 text-right text-slate-700">${data.quantity[i].toLocaleString()}t</td>
+          <td class="px-2.5 py-2.5 text-right text-slate-700">$${data.contract[i].toLocaleString()}</td>
+          <td class="px-2.5 py-2.5 text-right text-slate-600">${data.exchange[i].toLocaleString()}원</td>
+          <td class="px-2.5 py-2.5 text-right font-black text-slate-900">${formatWon(data.purchase[i])}</td>
+          <td class="px-2.5 py-2.5 text-right font-black ${effectiveSpread(data, i) <= 0 ? 'text-emerald-600' : 'text-red-600'}">${effectiveSpread(data, i).toFixed(2)}%</td>
+        </tr>`).join('');
+      
+      const current = effectiveSpread(data, 4);
+      document.getElementById('current-spread').textContent = `${current.toFixed(2)}% (${current <= 0 ? '절감' : '초과'})`;
+    }
+
+    // 상단 가공 차트
+    function initSpreadChart() {
+      const canvas = document.getElementById('spreadChart');
+      if (!canvas) return;
+      const data = currentSpreadData();
+      spreadChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: SPREAD_MONTHS,
+          datasets: [
+            { label: '계약국제가($)', data: data.contract, yAxisID: 'yPrice', borderColor: '#94a3b8', borderDash: [3,3], borderWidth: 1.8, pointRadius: 3, tension: .2 },
+            { label: 'Spot($)', data: data.spot, yAxisID: 'yPrice', borderColor: '#f59e0b', borderWidth: 2, pointRadius: 3, tension: .2 },
+            { label: '시차보정 기준원가(₩)', data: data.purchase.map((_, i) => correctedBaseline(data, i)), yAxisID: 'yWon', borderColor: '#2563eb', borderWidth: 1.8, pointRadius: 3, tension: .2 },
+            { label: 'SAP 단가(₩)', data: data.purchase, yAxisID: 'yWon', borderColor: '#ea580c', backgroundColor: 'rgba(234, 88, 12, 0.08)', fill: true, borderWidth: 2.5, pointRadius: 4, pointBackgroundColor: '#fff', pointBorderWidth: 2, tension: .2 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(148,163,184,.12)' }, ticks: { font: { size: 10 } } },
+            yPrice: { position: 'left', min: 800, suggestedMax: 1050, title: { display: true, text: '국제가·Spot ($/Ton)', font: { size: 9, weight: 'bold' } }, grid: { color: 'rgba(148,163,184,.12)' }, ticks: { font: { size: 9 } } },
+            yWon: { position: 'right', min: 1300000, suggestedMax: 1550000, title: { display: true, text: '실구매단가 (₩/Ton)', font: { size: 9, weight: 'bold' } }, grid: { drawOnChartArea: false }, ticks: { font: { size: 9 }, callback: v => (v/10000) + '만' } }
+          }
+        }
+      });
+    }
+
+    // 하단 팩트 꺾은선 차트 (스케치 반영)[cite: 10]
+    function initPureFactChart() {
+      const canvas = document.getElementById('pureFactLineChart');
+      if (!canvas) return;
+      const data = currentSpreadData();
+      pureFactChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: SPREAD_MONTHS,
+          datasets: [
+            { 
+              label: 'SAP 실구매가 (₩/Ton)', 
+              data: data.purchase, 
+              yAxisID: 'yActual', 
+              borderColor: '#ea580c', 
+              backgroundColor: 'rgba(234, 88, 12, 0.05)',
+              borderWidth: 2.5, 
+              pointRadius: 4, 
+              pointBackgroundColor: '#ea580c', 
+              tension: .2 
+            },
+            { 
+              label: '기준환율 (₩/USD)', 
+              data: data.exchange, 
+              yAxisID: 'yFx', 
+              borderColor: '#059669', 
+              borderWidth: 2, 
+              borderDash: [2, 2],
+              pointRadius: 3, 
+              tension: .2 
+            },
+            { 
+              label: '계약 국제가격 ($/Ton)', 
+              data: data.contract, 
+              yAxisID: 'yGlobal', 
+              borderColor: '#64748b', 
+              borderWidth: 1.8, 
+              borderDash: [4, 4],
+              pointRadius: 3, 
+              tension: .2 
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(148,163,184,.12)' }, ticks: { font: { size: 10 } } },
+            yActual: { 
+              position: 'left', 
+              min: 1350000, 
+              max: 1550000, 
+              title: { display: true, text: 'SAP 실구매단가 (원)', font: { size: 9, weight: 'bold' } }, 
+              grid: { color: 'rgba(148,163,184,.12)' }, 
+              ticks: { font: { size: 9 }, callback: v => (v/10000) + '만' } 
+            },
+            yFx: { 
+              position: 'right', 
+              min: 1300, 
+              max: 1450, 
+              title: { display: true, text: '환율 (원)', font: { size: 9, weight: 'bold' } }, 
+              grid: { drawOnChartArea: false }, 
+              ticks: { font: { size: 9 } } 
+            },
+            yGlobal: { position: 'right', display: false, min: 800, max: 1100 }
+          }
+        }
+      });
+    }
+
+    function refreshCharts() {
+      const data = currentSpreadData();
+      if (spreadChartInstance) {
+        spreadChartInstance.data.datasets[0].data = data.contract;
+        spreadChartInstance.data.datasets[1].data = data.spot;
+        spreadChartInstance.data.datasets[1].hidden = !showSpotLine;
+        spreadChartInstance.data.datasets[2].data = data.purchase.map((_, i) => correctedBaseline(data, i));
+        spreadChartInstance.data.datasets[3].data = data.purchase;
+        spreadChartInstance.update();
+      }
+      if (pureFactChartInstance) {
+        pureFactChartInstance.data.datasets[0].data = data.purchase;
+        pureFactChartInstance.data.datasets[1].data = data.exchange;
+        pureFactChartInstance.data.datasets[2].data = data.contract;
+        pureFactChartInstance.update();
+      }
+    }
+
+    function updateSpreadMaterial() {
+      renderSpreadTable();
+      refreshCharts();
+    }
+
+    function toggleSpotLine() {
+      showSpotLine = !showSpotLine;
+      const toggle = document.getElementById('spot-toggle');
+      toggle.classList.toggle('bg-amber-500', showSpotLine);
+      toggle.classList.toggle('bg-slate-300', !showSpotLine);
+      const knob = toggle.querySelector('span');
+      knob.classList.toggle('right-0.5', showSpotLine);
+      knob.classList.toggle('left-0.5', !showSpotLine);
+      refreshCharts();
+    }
+
+    function setSpreadLag(days) {
+      spreadLag = days;
+      document.querySelectorAll('.lag-btn').forEach(btn => {
+        const active = Number(btn.dataset.lag) === days;
+        btn.className = `lag-btn px-3 py-1.5 rounded-md text-[11px] ${active ? 'font-black bg-[#eb6100] text-white shadow-sm' : 'font-bold text-slate-500'}`;
+      });
+      const label = days === 0 ? '시차 없음' : `시차: ${days}일 보정`;
+      document.getElementById('lag-badge').textContent = label;
+      document.getElementById('lag-description').textContent = days === 0
+        ? '시차 보정 없이 현재 월의 국제가격과 실구매가를 비교합니다.'
+        : `현재 ${days}일 시차가 적용되어 실구매가와 정합 정렬됨 `;
+      renderSpreadTable();
+      refreshCharts();
+    }
+
+    // =========================================================
+    // UA-12: 목표원가 계산 및 Master-Detail 이력 로직
+    // =========================================================
+    let selectedHistoryId = 1;
+    let calculationHistory = [
+      {
+        id: 1,
+        time: '2026-09-21 09:15',
+        formulaCode: 'FORMULA_PP_STD',
+        formulaName: 'PP 컴파운딩 표준산식 Ver 2.4',
+        currency: 'KRW',
+        weights: '78% : 22%',
+        targetPrice: 1408500,
+        actualPrice: 1413100,
+        gap: 4600,
+        gapPct: 0.32,
+        status: 'Pass (안정)',
+        statusClass: 'bg-emerald-100 text-emerald-800',
+        fx: 1385.40,
+        mat1: { name: '프로필렌 (Propylene C3)', indexName: 'Platts FOB Korea Propylene', price: 895.0, weight: 78 },
+        mat2: { name: '단량체 및 첨가제 (Additives)', indexName: 'ICIS Monomer Additive Index', price: 145.0, weight: 22 },
+        overhead: 120000,
+        formulaStr: '[ ($895.0 × 0.78) + ($145.0 × 0.22) ] × 1,385.40 + ₩120,000'
+      }
+    ];
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('history-table-body');
+      tbody.innerHTML = '';
+      calculationHistory.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = `history-row hover:bg-slate-50 transition ${item.id === selectedHistoryId ? 'selected' : ''}`;
+        tr.onclick = () => selectHistoryRow(item.id);
+
+        const isKRW = item.currency === 'KRW';
+        const formattedTarget = isKRW ? '₩ ' + item.targetPrice.toLocaleString() : '$ ' + item.targetPrice.toLocaleString();
+        const formattedActual = isKRW ? '₩ ' + item.actualPrice.toLocaleString() : '$ ' + item.actualPrice.toLocaleString();
+
+        tr.innerHTML = `
+          <td class="py-3 px-3 font-semibold text-slate-800">${item.time}</td>
+          <td class="py-3 px-3 font-bold text-slate-900">${item.formulaName}</td>
+          <td class="py-3 px-3 font-medium text-slate-600">${item.weights}</td>
+          <td class="py-3 px-3 text-right font-black text-[#eb6100]">${formattedTarget}</td>
+          <td class="py-3 px-3 text-right font-bold text-slate-900">${formattedActual}</td>
+          <td class="py-3 px-3 text-center">
+            <span class="px-2 py-0.5 rounded font-black text-[10px] ${item.statusClass}">${item.status}</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('history-count').innerText = `총 ${calculationHistory.length}건`;
+    }
+
+    function selectHistoryRow(id) {
+      selectedHistoryId = id;
+      const item = calculationHistory.find(x => x.id === id);
+      if (!item) return;
+
+      document.querySelectorAll('.history-row').forEach(r => r.classList.remove('selected'));
+      renderHistoryTable();
+
+      const isKRW = item.currency === 'KRW';
+      document.getElementById('detail-formula-name').innerText = item.formulaName;
+      document.getElementById('detail-timestamp').innerText = `계산 기준일시: ${item.time}`;
+      
+      const badge = document.getElementById('detail-badge');
+      badge.innerText = item.status;
+      badge.className = `px-2.5 py-1 rounded-full text-xs font-black ${item.statusClass}`;
+
+      document.getElementById('detail-target-price').innerText = isKRW ? '₩ ' + item.targetPrice.toLocaleString() : '$ ' + item.targetPrice.toLocaleString();
+      document.getElementById('detail-unit').innerText = isKRW ? '/ Ton (KRW)' : '/ Ton (USD)';
+      document.getElementById('detail-actual-price').innerText = isKRW ? '₩ ' + item.actualPrice.toLocaleString() : '$ ' + item.actualPrice.toLocaleString();
+
+      const gapSign = item.gap >= 0 ? '+' : '';
+      const gapText = isKRW ? `${gapSign}₩ ${Math.abs(item.gap).toLocaleString()} (${gapSign}${item.gapPct.toFixed(2)}%)` : `${gapSign}$ ${Math.abs(item.gap)} (${gapSign}${item.gapPct.toFixed(2)}%)`;
+      const gapElem = document.getElementById('detail-gap-price');
+      gapElem.innerText = gapText;
+      gapElem.className = Math.abs(item.gapPct) > 3 ? 'font-bold text-rose-600' : 'font-bold text-emerald-700';
+
+      document.getElementById('detail-formula-str').innerText = item.formulaStr;
+      document.getElementById('detail-mat1-name').innerText = `원료 1: ${item.mat1.name}`;
+      document.getElementById('detail-mat1-weight').innerText = `가중치 ${item.mat1.weight}%`;
+      document.getElementById('detail-mat2-name').innerText = `원료 2: ${item.mat2.name}`;
+      document.getElementById('detail-mat2-weight').innerText = `가중치 ${item.mat2.weight}%`;
+    }
+
+    function onFormulaChange(val) {
+      if (val === 'FORMULA_PP_STD') {
+        document.getElementById('raw-mat-name-1').value = '프로필렌 (Propylene C3)';
+        document.getElementById('raw-mat-weight-1').value = 78;
+        document.getElementById('raw-mat-name-2').value = '단량체 및 첨가제 (Additives)';
+        document.getElementById('raw-mat-weight-2').value = 22;
+        document.getElementById('calc-currency-select').value = 'KRW';
+      } else if (val === 'FORMULA_PP_SIMPLE') {
+        document.getElementById('raw-mat-name-1').value = '프로필렌 (Propylene C3)';
+        document.getElementById('raw-mat-weight-1').value = 100;
+        document.getElementById('raw-mat-name-2').value = '미적용';
+        document.getElementById('raw-mat-weight-2').value = 0;
+        document.getElementById('calc-currency-select').value = 'KRW';
+      } else if (val === 'FORMULA_EVA_SOLAR') {
+        document.getElementById('raw-mat-name-1').value = '에틸렌 (Ethylene C2)';
+        document.getElementById('raw-mat-weight-1').value = 72;
+        document.getElementById('raw-mat-name-2').value = '초산 비닐 단량체 (VAM)';
+        document.getElementById('raw-mat-weight-2').value = 28;
+        document.getElementById('calc-currency-select').value = 'USD';
+      }
+    }
+
+    function onIndexChange(row, priceVal) {
+      document.getElementById(`raw-mat-price-${row}`).value = `$ ${parseFloat(priceVal).toFixed(2)} / Ton`;
+    }
+
+    function executeTargetCostCalc() {
+      const formulaSelect = document.getElementById('calc-formula-select');
+      const formulaName = formulaSelect.options[formulaSelect.selectedIndex].text.split(' (')[0];
+      const currency = document.getElementById('calc-currency-select').value;
+      const fxRate = 1385.40;
+
+      const mat1Name = document.getElementById('raw-mat-name-1').value;
+      const mat1IdxElem = document.getElementById('raw-mat-index-1');
+      const mat1Price = parseFloat(mat1IdxElem.value);
+      const mat1Weight = parseFloat(document.getElementById('raw-mat-weight-1').value) || 0;
+
+      const mat2Name = document.getElementById('raw-mat-name-2').value;
+      const mat2IdxElem = document.getElementById('raw-mat-index-2');
+      const mat2Price = parseFloat(mat2IdxElem.value);
+      const mat2Weight = parseFloat(document.getElementById('raw-mat-weight-2').value) || 0;
+
+      const overhead = currency === 'KRW' ? 120000 : 86.6;
+      const weightedDollar = (mat1Price * (mat1Weight / 100)) + (mat2Price * (mat2Weight / 100));
+      
+      let targetPrice = 0;
+      let actualPrice = currency === 'KRW' ? 1413100 : 1020;
+
+      if (currency === 'KRW') {
+        targetPrice = Math.round(weightedDollar * fxRate + overhead);
+      } else {
+        targetPrice = Math.round(weightedDollar + overhead);
+      }
+
+      const gap = targetPrice - actualPrice;
+      const gapPct = (gap / actualPrice) * 100;
+      const isAlert = Math.abs(gapPct) > 3.0;
+
+      const now = new Date();
+      const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+      const newId = Date.now();
+      calculationHistory.unshift({
+        id: newId,
+        time: timeStr,
+        formulaCode: formulaSelect.value,
+        formulaName: formulaName,
+        currency: currency,
+        weights: `${mat1Weight}% : ${mat2Weight}%`,
+        targetPrice: targetPrice,
+        actualPrice: actualPrice,
+        gap: gap,
+        gapPct: gapPct,
+        status: isAlert ? 'Alert (임계초과)' : 'Pass (안정)',
+        statusClass: isAlert ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800',
+        fx: fxRate,
+        mat1: { name: mat1Name, indexName: mat1IdxElem.options[mat1IdxElem.selectedIndex].text, price: mat1Price, weight: mat1Weight },
+        mat2: { name: mat2Name, indexName: mat2IdxElem.options[mat2IdxElem.selectedIndex].text, price: mat2Price, weight: mat2Weight },
+        overhead: overhead,
+        formulaStr: currency === 'KRW' ? `[ ($${mat1Price} × ${mat1Weight/100}) + ($${mat2Price} × ${mat2Weight/100}) ] × ${fxRate} + ₩120,000` : `[ ($${mat1Price} × ${mat1Weight/100}) + ($${mat2Price} × ${mat2Weight/100}) ] + $86.6`
+      });
+
+      selectHistoryRow(newId);
+    }
+
+    // 초기 실행
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSpreadTable();
+      initSpreadChart();
+      initPureFactChart();
+
+      renderHistoryTable();
+      selectHistoryRow(1);
+    });
+  </script>
+</body>
+</html>
